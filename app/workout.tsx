@@ -29,7 +29,7 @@ export default function WorkoutPage() {
       <Button
         title="Start Routine"
         onPress={() => {
-          /* Add functionality here */
+          router.push("/routines"); // Navigate to routines.tsx
         }}
       />
     </View>

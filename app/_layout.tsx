@@ -53,6 +53,12 @@ export default function RootLayout() {
           href: null, // Excludes this route from the tabs
         }}
       />
+      <Tabs.Screen
+        name="createroutine"
+        options={{
+          href: null, // Excludes this route from the tabs
+        }}
+      />
 
       {/* Profile */}
       <Tabs.Screen

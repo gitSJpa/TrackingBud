@@ -1,129 +1,193 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
-  FlatList,
   TextInput,
   Button,
   StyleSheet,
   Alert,
+  FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
 } from "react-native";
-import { useRouter, useSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 export default function RoutineStart() {
   const router = useRouter();
-  const { routine } = useSearchParams(); // Get the routine data from params
-  const parsedRoutine = JSON.parse(routine); // Parse the routine data
+  const { routine } = useLocalSearchParams();
+  const parsedRoutine = routine
+    ? JSON.parse(routine)
+    : { name: "Unknown", exercises: [] };
+
   const [exercises, setExercises] = useState(
     parsedRoutine.exercises.map((exercise) => ({
       ...exercise,
-      reps: 0,
-      weight: 0,
+      sets: Array.from({ length: exercise.sets }, (_, index) => ({
+        id: `${exercise.id}_set${index + 1}`,
+        reps: "",
+        weight: "",
+      })),
     }))
   );
-  const [newExercise, setNewExercise] = useState("");
 
-  // Update an existing exercise
-  const updateExercise = (id, field, value) => {
-    setExercises(
-      exercises.map((exercise) =>
-        exercise.id === id
-          ? { ...exercise, [field]: parseInt(value) || 0 }
+  const inputRefs = useRef({});
+
+  const updateSet = (exerciseId, setIndex, field, value) => {
+    setExercises((prevExercises) =>
+      prevExercises.map((exercise) =>
+        exercise.id === exerciseId
+          ? {
+              ...exercise,
+              sets: exercise.sets.map((set, index) =>
+                index === setIndex ? { ...set, [field]: value } : set
+              ),
+            }
           : exercise
       )
     );
   };
 
-  // Add a new exercise
+  const addSet = (exerciseId) => {
+    setExercises((prevExercises) =>
+      prevExercises.map((exercise) =>
+        exercise.id === exerciseId
+          ? {
+              ...exercise,
+              sets: [
+                ...exercise.sets,
+                {
+                  id: `${exercise.id}_set${exercise.sets.length + 1}`,
+                  reps: "",
+                  weight: "",
+                },
+              ],
+            }
+          : exercise
+      )
+    );
+  };
+
+  const removeSet = (exerciseId, setIndex) => {
+    setExercises((prevExercises) =>
+      prevExercises.map((exercise) =>
+        exercise.id === exerciseId
+          ? {
+              ...exercise,
+              sets: exercise.sets.filter((_, index) => index !== setIndex),
+            }
+          : exercise
+      )
+    );
+  };
+
+  const [newExerciseName, setNewExerciseName] = useState("");
   const addExercise = () => {
-    if (newExercise.trim() === "") {
+    if (!newExerciseName.trim()) {
       Alert.alert("Error", "Exercise name cannot be empty.");
       return;
     }
 
-    setExercises([
-      ...exercises,
-      {
-        id: Date.now().toString(),
-        name: newExercise,
-        reps: 0,
-        weight: 0,
-        sets: 1,
-      },
-    ]);
-    setNewExercise("");
+    const newExercise = {
+      id: Date.now().toString(),
+      name: newExerciseName,
+      sets: [{ id: `${Date.now()}_set1`, reps: "", weight: "" }],
+    };
+
+    setExercises([...exercises, newExercise]);
+    setNewExerciseName("");
   };
 
-  // Remove an exercise
-  const removeExercise = (id) => {
-    setExercises(exercises.filter((exercise) => exercise.id !== id));
-  };
-
-  // Finish the workout
   const finishRoutine = () => {
     Alert.alert("Routine Complete", "Great job completing your routine!");
-    router.push("/routines"); // Navigate back to the routines list
+    router.push("/routines");
   };
 
+  const flatData = exercises.flatMap((exercise) => [
+    { type: "exercise", ...exercise },
+    ...exercise.sets.map((set, index) => ({
+      type: "set",
+      exerciseId: exercise.id,
+      set,
+      index,
+    })),
+  ]);
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{parsedRoutine.name}</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          <Text style={styles.title}>{parsedRoutine.name}</Text>
 
-      {/* List of Exercises */}
-      <FlatList
-        data={exercises}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.exerciseItem}>
-            <Text style={styles.exerciseName}>{item.name}</Text>
+          <FlatList
+            data={flatData}
+            keyExtractor={(item, index) =>
+              item.type === "exercise" ? item.id : item.set.id
+            }
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingBottom: 20 }}
+            renderItem={({ item }) => {
+              if (item.type === "exercise") {
+                return (
+                  <View style={styles.exerciseContainer}>
+                    <Text style={styles.exerciseName}>{item.name}</Text>
+                    <Button title="Add Set" onPress={() => addSet(item.id)} />
+                  </View>
+                );
+              } else {
+                return (
+                  <View style={styles.setContainer}>
+                    <Text style={styles.setLabel}>Set {item.index + 1}</Text>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Reps"
-              keyboardType="numeric"
-              value={item.reps.toString()}
-              onChangeText={(value) => updateExercise(item.id, "reps", value)}
-            />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter Reps"
+                      keyboardType="numeric"
+                      value={item.set.reps}
+                      onChangeText={(value) =>
+                        updateSet(item.exerciseId, item.index, "reps", value)
+                      }
+                    />
 
-            <TextInput
-              style={styles.input}
-              placeholder="Weight (kg)"
-              keyboardType="numeric"
-              value={item.weight.toString()}
-              onChangeText={(value) => updateExercise(item.id, "weight", value)}
-            />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter Weight"
+                      keyboardType="numeric"
+                      value={item.set.weight}
+                      onChangeText={(value) =>
+                        updateSet(item.exerciseId, item.index, "weight", value)
+                      }
+                    />
 
-            <TextInput
-              style={styles.input}
-              placeholder="Sets"
-              keyboardType="numeric"
-              value={item.sets.toString()}
-              onChangeText={(value) => updateExercise(item.id, "sets", value)}
-            />
-
-            <Button
-              title="Remove"
-              color="red"
-              onPress={() => removeExercise(item.id)}
-            />
-          </View>
-        )}
-      />
-
-      {/* Add New Exercise */}
-      <View style={styles.addExerciseContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="New Exercise Name"
-          value={newExercise}
-          onChangeText={setNewExercise}
-        />
-        <Button title="Add Exercise" onPress={addExercise} />
-      </View>
-
-      {/* Finish Routine Button */}
-      <Button title="Finish Routine" onPress={finishRoutine} />
-    </View>
+                    <Button
+                      title="Remove Set"
+                      color="red"
+                      onPress={() => removeSet(item.exerciseId, item.index)}
+                    />
+                  </View>
+                );
+              }
+            }}
+            ListFooterComponent={
+              <View style={styles.addExerciseContainer}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="New Exercise Name"
+                  value={newExerciseName}
+                  onChangeText={setNewExerciseName}
+                />
+                <Button title="Add Exercise" onPress={addExercise} />
+                <Button title="Finish Routine" onPress={finishRoutine} />
+              </View>
+            }
+          />
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -140,30 +204,45 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
-  exerciseItem: {
+  exerciseContainer: {
     backgroundColor: "#204b7d",
     padding: 15,
     borderRadius: 5,
-    marginVertical: 5,
+    marginVertical: 10,
   },
   exerciseName: {
-    fontSize: 18,
+    fontSize: 20,
     color: "#FFFFFF",
     marginBottom: 10,
+    textAlign: "center",
+  },
+  setContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#3066be",
+    padding: 10,
+    borderRadius: 5,
+    marginVertical: 5,
+  },
+  setLabel: {
+    fontSize: 16,
+    color: "#FFFFFF",
+    marginRight: 10,
   },
   input: {
     borderWidth: 1,
     borderColor: "#ddd",
     backgroundColor: "#fff",
     borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-    color: "#000",
+    padding: 8,
+    width: 100,
+    textAlign: "center",
   },
   addExerciseContainer: {
-    flexDirection: "row",
+    padding: 20,
     alignItems: "center",
-    justifyContent: "space-between",
-    marginVertical: 10,
   },
 });
+
+export default RoutineStart;

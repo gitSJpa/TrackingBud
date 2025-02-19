@@ -41,7 +41,7 @@ export default function Routines() {
   const startWorkout = (routine) => {
     router.push({
       pathname: "/routinestart",
-      params: { routine: JSON.stringify(routine) }, // Pass routine data
+      params: { routine: JSON.stringify(routine) }, // FIXED: Pass routine as JSON string
     });
   };
 

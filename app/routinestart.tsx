@@ -6,13 +6,12 @@ import {
   Button,
   StyleSheet,
   Alert,
-  FlatList,
-  Keyboard,
+  ScrollView,
   KeyboardAvoidingView,
   Platform,
-  TouchableWithoutFeedback,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { theme } from "./theme";
 
 export default function RoutineStart() {
   const router = useRouter();
@@ -32,6 +31,7 @@ export default function RoutineStart() {
     }))
   );
 
+  const scrollViewRef = useRef(null);
   const inputRefs = useRef({});
 
   const updateSet = (exerciseId, setIndex, field, value) => {
@@ -88,13 +88,11 @@ export default function RoutineStart() {
       Alert.alert("Error", "Exercise name cannot be empty.");
       return;
     }
-
     const newExercise = {
       id: Date.now().toString(),
       name: newExerciseName,
       sets: [{ id: `${Date.now()}_set1`, reps: "", weight: "" }],
     };
-
     setExercises([...exercises, newExercise]);
     setNewExerciseName("");
   };
@@ -104,89 +102,85 @@ export default function RoutineStart() {
     router.push("/routines");
   };
 
-  const flatData = exercises.flatMap((exercise) => [
-    { type: "exercise", ...exercise },
-    ...exercise.sets.map((set, index) => ({
-      type: "set",
-      exerciseId: exercise.id,
-      set,
-      index,
-    })),
-  ]);
+  const scrollToInput = (inputKey) => {
+    const node = inputRefs.current[inputKey];
+    if (node && scrollViewRef.current) {
+      node.measureLayout(
+        scrollViewRef.current,
+        (x, y) =>
+          scrollViewRef.current.scrollTo({ y: y - 100, animated: true }),
+        () => console.log("Measurement failed")
+      );
+    }
+  };
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 120 : 20}
+      style={styles.container}
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.container}>
-          <Text style={styles.title}>{parsedRoutine.name}</Text>
-
-          <FlatList
-            data={flatData}
-            keyExtractor={(item, index) =>
-              item.type === "exercise" ? item.id : item.set.id
-            }
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ paddingBottom: 20 }}
-            renderItem={({ item }) => {
-              if (item.type === "exercise") {
-                return (
-                  <View style={styles.exerciseContainer}>
-                    <Text style={styles.exerciseName}>{item.name}</Text>
-                    <Button title="Add Set" onPress={() => addSet(item.id)} />
-                  </View>
-                );
-              } else {
-                return (
-                  <View style={styles.setContainer}>
-                    <Text style={styles.setLabel}>Set {item.index + 1}</Text>
-
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Enter Reps"
-                      keyboardType="numeric"
-                      value={item.set.reps}
-                      onChangeText={(value) =>
-                        updateSet(item.exerciseId, item.index, "reps", value)
-                      }
-                    />
-
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Enter Weight"
-                      keyboardType="numeric"
-                      value={item.set.weight}
-                      onChangeText={(value) =>
-                        updateSet(item.exerciseId, item.index, "weight", value)
-                      }
-                    />
-
-                    <Button
-                      title="Remove Set"
-                      color="red"
-                      onPress={() => removeSet(item.exerciseId, item.index)}
-                    />
-                  </View>
-                );
-              }
-            }}
-            ListFooterComponent={
-              <View style={styles.addExerciseContainer}>
-                <TextInput
-                  style={styles.input}
-                  placeholder="New Exercise Name"
-                  value={newExerciseName}
-                  onChangeText={setNewExerciseName}
-                />
-                <Button title="Add Exercise" onPress={addExercise} />
-                <Button title="Finish Routine" onPress={finishRoutine} />
-              </View>
-            }
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="always"
+      >
+        <Text style={styles.title}>{parsedRoutine.name}</Text>
+        {exercises.map((exercise) => (
+          <View key={exercise.id}>
+            <View style={styles.exerciseContainer}>
+              <Text style={styles.exerciseName}>{exercise.name}</Text>
+              <Button title="Add Set" onPress={() => addSet(exercise.id)} />
+            </View>
+            {exercise.sets.map((set, setIndex) => {
+              const repsKey = `${exercise.id}_set${setIndex}_reps`;
+              const weightKey = `${exercise.id}_set${setIndex}_weight`;
+              return (
+                <View key={set.id} style={styles.setContainer}>
+                  <Text style={styles.setLabel}>Set {setIndex + 1}</Text>
+                  <TextInput
+                    ref={(ref) => (inputRefs.current[repsKey] = ref)}
+                    style={styles.input}
+                    placeholder="Enter Reps"
+                    keyboardType="numeric"
+                    value={set.reps}
+                    onFocus={() => scrollToInput(repsKey)}
+                    onChangeText={(value) =>
+                      updateSet(exercise.id, setIndex, "reps", value)
+                    }
+                  />
+                  <TextInput
+                    ref={(ref) => (inputRefs.current[weightKey] = ref)}
+                    style={styles.input}
+                    placeholder="Enter Weight"
+                    keyboardType="numeric"
+                    value={set.weight}
+                    onFocus={() => scrollToInput(weightKey)}
+                    onChangeText={(value) =>
+                      updateSet(exercise.id, setIndex, "weight", value)
+                    }
+                  />
+                  <Button
+                    title="Remove Set"
+                    color="red"
+                    onPress={() => removeSet(exercise.id, setIndex)}
+                  />
+                </View>
+              );
+            })}
+          </View>
+        ))}
+        <View style={styles.addExerciseContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="New Exercise Name"
+            value={newExerciseName}
+            onChangeText={setNewExerciseName}
           />
+          <Button title="Add Exercise" onPress={addExercise} />
+          <Button title="Finish Routine" onPress={finishRoutine} />
         </View>
-      </TouchableWithoutFeedback>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -194,25 +188,22 @@ export default function RoutineStart() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#16385e",
+    backgroundColor: theme.colors.primary,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    marginBottom: 20,
-    textAlign: "center",
+  scrollContent: {
+    padding: theme.spacing.large,
+    paddingBottom: 150,
   },
+  title: theme.typography.title,
   exerciseContainer: {
-    backgroundColor: "#204b7d",
+    backgroundColor: theme.colors.secondary,
     padding: 15,
     borderRadius: 5,
     marginVertical: 10,
   },
   exerciseName: {
     fontSize: 20,
-    color: "#FFFFFF",
+    color: theme.colors.text,
     marginBottom: 10,
     textAlign: "center",
   },
@@ -220,29 +211,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#3066be",
+    backgroundColor: theme.colors.accent,
     padding: 10,
     borderRadius: 5,
     marginVertical: 5,
   },
   setLabel: {
     fontSize: 16,
-    color: "#FFFFFF",
+    color: theme.colors.text,
     marginRight: 10,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "#fff",
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.white,
     borderRadius: 5,
     padding: 8,
     width: 100,
     textAlign: "center",
   },
   addExerciseContainer: {
-    padding: 20,
+    padding: theme.spacing.large,
     alignItems: "center",
   },
 });
-
-export default RoutineStart;

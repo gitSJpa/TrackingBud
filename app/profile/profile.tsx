@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
+import { theme } from "../theme";
 
 export default function ProfilePage() {
   const [selectedSection, setSelectedSection] = useState("Stats");
@@ -17,17 +18,14 @@ export default function ProfilePage() {
           <Text style={styles.sectionTitle}>Stats</Text>
           <Text style={styles.text}>Total Workouts: 10</Text>
           <Text style={styles.text}>Best Lift: Deadlift 100kg</Text>
-          {/* Add more stats as needed */}
         </View>
       );
     }
-
     if (selectedSection === "History") {
       return (
         <View>
           <Text style={styles.sectionTitle}>Workout History</Text>
           <ScrollView>
-            {/* Mock workout history for now */}
             <Text style={styles.text}>1. Jan 12, 2025 - Chest & Triceps</Text>
             <Text style={styles.text}>2. Jan 10, 2025 - Legs</Text>
             <Text style={styles.text}>3. Jan 8, 2025 - Back & Biceps</Text>
@@ -39,7 +37,6 @@ export default function ProfilePage() {
 
   return (
     <View style={styles.container}>
-      {/* Section Tabs */}
       <View style={styles.tabs}>
         <TouchableOpacity
           style={[styles.tab, selectedSection === "Stats" && styles.activeTab]}
@@ -71,8 +68,6 @@ export default function ProfilePage() {
           </Text>
         </TouchableOpacity>
       </View>
-
-      {/* Content */}
       <View style={styles.content}>{renderContent()}</View>
     </View>
   );
@@ -81,13 +76,13 @@ export default function ProfilePage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#16385e",
-    padding: 16,
+    backgroundColor: theme.colors.primary,
+    padding: theme.spacing.medium,
   },
   tabs: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginBottom: 16,
+    marginBottom: theme.spacing.medium,
   },
   tab: {
     padding: 10,
@@ -95,28 +90,16 @@ const styles = StyleSheet.create({
     borderBottomColor: "transparent",
   },
   activeTab: {
-    borderBottomColor: "#FFFFFF",
+    borderBottomColor: theme.colors.text,
   },
-  tabText: {
-    color: "#7A9EB1",
-    fontSize: 16,
-  },
+  tabText: theme.typography.tabText,
   activeTabText: {
-    color: "#FFFFFF",
+    color: theme.colors.text,
     fontWeight: "bold",
   },
   content: {
     flex: 1,
   },
-  sectionTitle: {
-    fontSize: 24,
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  text: {
-    fontSize: 16,
-    color: "#FFFFFF",
-    marginBottom: 4,
-  },
+  sectionTitle: theme.typography.sectionTitle,
+  text: theme.typography.text,
 });

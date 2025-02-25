@@ -1,7 +1,7 @@
-// app/stats.tsx
 import { View, Text, StyleSheet } from "react-native";
 import { useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
+import { theme } from "../theme";
 
 export default function StatsPage() {
   const [totalWorkouts, setTotalWorkouts] = useState(0);
@@ -10,13 +10,10 @@ export default function StatsPage() {
   useEffect(() => {
     const loadWorkoutData = async () => {
       try {
-        // Retrieve workout data from SecureStore
         const storedTotalWorkouts = await SecureStore.getItemAsync(
           "totalWorkouts"
         );
         const storedTotalTime = await SecureStore.getItemAsync("totalTime");
-
-        // Set the state with the retrieved data
         setTotalWorkouts(
           storedTotalWorkouts ? parseInt(storedTotalWorkouts) : 0
         );
@@ -25,11 +22,10 @@ export default function StatsPage() {
         console.error("Error loading workout data:", error);
       }
     };
-
     loadWorkoutData();
   }, []);
 
-  const formatTime = (seconds: number) => {
+  const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
@@ -49,17 +45,12 @@ export default function StatsPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#16385e",
+    padding: theme.spacing.medium,
+    backgroundColor: theme.colors.primary,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    marginBottom: 16,
-  },
+  title: theme.typography.title,
   text: {
-    fontSize: 18,
-    color: "#FFFFFF",
+    ...theme.typography.text,
+    fontSize: 18, // Slightly larger as per original
   },
 });

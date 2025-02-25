@@ -1,6 +1,7 @@
 import { View, Text, FlatList, StyleSheet, Button, Alert } from "react-native";
 import { useState, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
+import { theme } from "../theme";
 
 export default function HistoryPage() {
   const [workoutHistory, setWorkoutHistory] = useState([]);
@@ -10,7 +11,6 @@ export default function HistoryPage() {
       const history = await SecureStore.getItemAsync("workoutHistory");
       setWorkoutHistory(history ? JSON.parse(history) : []);
     };
-
     fetchHistory();
   }, []);
 
@@ -25,12 +25,12 @@ export default function HistoryPage() {
           style: "destructive",
           onPress: async () => {
             const updatedHistory = [...workoutHistory];
-            updatedHistory.splice(index, 1); // Remove the workout at the given index
-            setWorkoutHistory(updatedHistory); // Update the state
+            updatedHistory.splice(index, 1);
+            setWorkoutHistory(updatedHistory);
             await SecureStore.setItemAsync(
               "workoutHistory",
               JSON.stringify(updatedHistory)
-            ); // Save updated history to SecureStore
+            );
           },
         },
       ]
@@ -52,8 +52,8 @@ export default function HistoryPage() {
               {Array.isArray(item.exercises) && item.exercises.length > 0 ? (
                 item.exercises.map((exercise, idx) => (
                   <Text key={idx} style={styles.text}>
-                    - {exercise.name}: {exercise.sets} sets x {exercise.reps}{" "}
-                    reps @ {exercise.weight} kg
+                    - {exercise.name}: {exercise.reps} reps @ {exercise.weight}{" "}
+                    kg
                   </Text>
                 ))
               ) : (
@@ -75,23 +75,13 @@ export default function HistoryPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#16385e",
+    padding: theme.spacing.medium,
+    backgroundColor: theme.colors.primary,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  text: {
-    fontSize: 16,
-    color: "#FFFFFF",
-    marginBottom: 8,
-  },
+  title: theme.typography.title,
+  text: theme.typography.text,
   historyItem: {
-    backgroundColor: "#2d517f",
+    backgroundColor: theme.colors.historyItem,
     padding: 10,
     marginBottom: 10,
     borderRadius: 8,

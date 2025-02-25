@@ -1,5 +1,6 @@
 import { View, Text, Button, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
+import { theme } from "./theme";
 
 export default function WorkoutPage() {
   const router = useRouter();
@@ -7,31 +8,14 @@ export default function WorkoutPage() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Workout</Text>
-
-      {/* Quick Start Section */}
       <Text style={styles.sectionTitle}>Quick Start</Text>
-      <Button
-        title="Start Workout"
-        onPress={() => {
-          router.push("/start"); // Navigate to start.tsx
-        }}
-      />
-
-      {/* Routines Section */}
+      <Button title="Start Workout" onPress={() => router.push("/start")} />
       <Text style={styles.sectionTitle}>Routines</Text>
       <Button
         title="Create Routine"
-        onPress={() => {
-          router.push("/createroutine"); // Navigate to createroutine.tsx
-        }}
+        onPress={() => router.push("/createroutine")}
       />
-
-      <Button
-        title="Start Routine"
-        onPress={() => {
-          router.push("/routines"); // Navigate to routines.tsx
-        }}
-      />
+      <Button title="Start Routine" onPress={() => router.push("/routines")} />
     </View>
   );
 }
@@ -39,20 +23,9 @@ export default function WorkoutPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#16385e",
+    padding: theme.spacing.large,
+    backgroundColor: theme.colors.primary,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#FFFFFF",
-    marginTop: 20,
-    marginBottom: 10,
-  },
+  title: theme.typography.title,
+  sectionTitle: theme.typography.sectionTitle,
 });

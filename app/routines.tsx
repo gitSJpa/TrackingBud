@@ -2,46 +2,41 @@ import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, StyleSheet, Button, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import { theme } from "./theme";
 
 export default function Routines() {
   const [routines, setRoutines] = useState([]);
   const router = useRouter();
 
-  // Load routines from AsyncStorage
   const loadRoutines = async () => {
     try {
       const keys = await AsyncStorage.getAllKeys();
       const storedRoutines = await AsyncStorage.multiGet(keys);
-
-      // Filter for keys that belong to routines
       const parsedRoutines = storedRoutines
         .map(([key, value]) =>
           key.startsWith("routine_") ? JSON.parse(value) : null
         )
         .filter((routine) => routine !== null);
-
       setRoutines(parsedRoutines);
     } catch (error) {
       console.error("Failed to load routines:", error);
     }
   };
 
-  // Delete a routine
   const deleteRoutine = async (id) => {
     try {
       await AsyncStorage.removeItem(`routine_${id}`);
       Alert.alert("Deleted", "The routine has been deleted.");
-      loadRoutines(); // Reload the routines
+      loadRoutines();
     } catch (error) {
       console.error("Failed to delete routine:", error);
     }
   };
 
-  // Navigate to workout session
   const startWorkout = (routine) => {
     router.push({
       pathname: "/routinestart",
-      params: { routine: JSON.stringify(routine) }, // FIXED: Pass routine as JSON string
+      params: { routine: JSON.stringify(routine) },
     });
   };
 
@@ -52,7 +47,6 @@ export default function Routines() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Your Routines</Text>
-
       {routines.length === 0 ? (
         <Text style={styles.noRoutinesText}>
           No routines found. Create one first!
@@ -86,29 +80,23 @@ export default function Routines() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#16385e",
+    padding: theme.spacing.large,
+    backgroundColor: theme.colors.primary,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    marginBottom: 20,
-  },
+  title: theme.typography.title,
   noRoutinesText: {
-    color: "#FFFFFF",
-    fontSize: 16,
+    ...theme.typography.text,
     textAlign: "center",
   },
   routineItem: {
-    backgroundColor: "#204b7d",
+    backgroundColor: theme.colors.secondary,
     padding: 15,
     borderRadius: 5,
     marginBottom: 10,
   },
   routineName: {
     fontSize: 18,
-    color: "#FFFFFF",
+    color: theme.colors.text,
   },
   buttons: {
     flexDirection: "row",

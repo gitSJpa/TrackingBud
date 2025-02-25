@@ -1,98 +1,40 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { theme } from "./theme";
 
 export default function RootLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
-        tabBarStyle: { backgroundColor: "#16385e" },
-        tabBarActiveTintColor: "#FFFFFF",
-        tabBarInactiveTintColor: "#7A9EB1",
+        tabBarStyle: { backgroundColor: theme.colors.primary },
+        tabBarActiveTintColor: theme.colors.text,
+        tabBarInactiveTintColor: theme.colors.inactiveTab,
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName:
-            | "home"
-            | "home-outline"
-            | "barbell"
-            | "barbell-outline"
-            | "person"
-            | "person-outline";
-
+          let iconName;
           if (route.name === "index") {
             iconName = focused ? "home" : "home-outline";
           } else if (route.name === "workout") {
             iconName = focused ? "barbell" : "barbell-outline";
           } else if (route.name === "profile/profile") {
             iconName = focused ? "person" : "person-outline";
-          } else {
-            iconName = "home"; // or some other default value
           }
-
           return <Ionicons name={iconName} size={size} color={color} />;
         },
       })}
     >
-      {/* Home */}
-      <Tabs.Screen
-        name="index"
-        options={{
-          tabBarLabel: "Home",
-        }}
-      />
-
-      {/* Workout */}
-      <Tabs.Screen
-        name="workout"
-        options={{
-          tabBarLabel: "Workout",
-        }}
-      />
-      <Tabs.Screen
-        name="start"
-        options={{
-          href: null, // Excludes this route from the tabs
-        }}
-      />
-      <Tabs.Screen
-        name="createroutine"
-        options={{
-          href: null, // Excludes this route from the tabs
-        }}
-      />
-      <Tabs.Screen
-        name="routines"
-        options={{
-          href: null, // Excludes this route from the tabs
-        }}
-      />
-      <Tabs.Screen
-        name="routinestart"
-        options={{
-          href: null, // Excludes this route from the tabs
-        }}
-      />
-
-      {/* Profile */}
+      <Tabs.Screen name="index" options={{ tabBarLabel: "Home" }} />
+      <Tabs.Screen name="workout" options={{ tabBarLabel: "Workout" }} />
+      <Tabs.Screen name="start" options={{ href: null }} />
+      <Tabs.Screen name="createroutine" options={{ href: null }} />
+      <Tabs.Screen name="routines" options={{ href: null }} />
+      <Tabs.Screen name="routinestart" options={{ href: null }} />
       <Tabs.Screen
         name="profile/profile"
-        options={{
-          tabBarLabel: "Profile",
-        }}
+        options={{ tabBarLabel: "Profile" }}
       />
-
-      {/* Ensure history and stats do NOT appear */}
-      <Tabs.Screen
-        name="profile/history"
-        options={{
-          href: null, // Excludes this route from the tabs
-        }}
-      />
-      <Tabs.Screen
-        name="profile/stats"
-        options={{
-          href: null, // Excludes this route from the tabs
-        }}
-      />
+      <Tabs.Screen name="profile/history" options={{ href: null }} />
+      <Tabs.Screen name="profile/stats" options={{ href: null }} />
     </Tabs>
   );
 }

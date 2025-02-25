@@ -9,33 +9,24 @@ import {
   Alert,
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
+import { theme } from "./theme";
 
 export default function WorkoutPage() {
   const [exerciseName, setExerciseName] = useState("");
   const [weight, setWeight] = useState("");
   const [reps, setReps] = useState("");
-  const [sets, setSets] = useState<
-    { name: string; weight: number; reps: number }[]
-  >([]);
-  const [workoutHistory, setWorkoutHistory] = useState<
-    {
-      date: string;
-      exercises: { name: string; weight: number; reps: number }[];
-    }[]
-  >([]);
+  const [sets, setSets] = useState([]);
 
   const addSet = () => {
     if (!exerciseName || !weight || !reps) {
       Alert.alert("Error", "Please fill in all fields before adding a set.");
       return;
     }
-
     const newSet = {
       name: exerciseName,
       weight: parseFloat(weight),
       reps: parseInt(reps),
     };
-
     setSets((prevSets) => [...prevSets, newSet]);
     setWeight("");
     setReps("");
@@ -49,22 +40,18 @@ export default function WorkoutPage() {
       );
       return;
     }
-
     const newWorkout = {
       date: new Date().toLocaleDateString(),
       exercises: sets,
     };
-
     const storedHistory = await SecureStore.getItemAsync("workoutHistory");
     const updatedHistory = storedHistory
       ? [...JSON.parse(storedHistory), newWorkout]
       : [newWorkout];
-
     await SecureStore.setItemAsync(
       "workoutHistory",
       JSON.stringify(updatedHistory)
     );
-    setWorkoutHistory(updatedHistory);
     setSets([]);
     setExerciseName("");
     Alert.alert("Success", "Workout saved!");
@@ -73,18 +60,17 @@ export default function WorkoutPage() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Start Workout</Text>
-
       <TextInput
         style={styles.input}
         placeholder="Exercise Name"
-        placeholderTextColor="#ccc"
+        placeholderTextColor={theme.colors.placeholder}
         value={exerciseName}
         onChangeText={setExerciseName}
       />
       <TextInput
         style={styles.input}
         placeholder="Weight (kg)"
-        placeholderTextColor="#ccc"
+        placeholderTextColor={theme.colors.placeholder}
         value={weight}
         onChangeText={setWeight}
         keyboardType="numeric"
@@ -92,23 +78,21 @@ export default function WorkoutPage() {
       <TextInput
         style={styles.input}
         placeholder="Reps"
-        placeholderTextColor="#ccc"
+        placeholderTextColor={theme.colors.placeholder}
         value={reps}
         onChangeText={setReps}
         keyboardType="numeric"
       />
       <Button title="Add Set" onPress={addSet} />
-
       <FlatList
         data={sets}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item, index) => `${item.name}_${index}`}
         renderItem={({ item }) => (
           <Text style={styles.text}>
             {item.name}: {item.reps} reps @ {item.weight} kg
           </Text>
         )}
       />
-
       <Button title="Finish Workout" onPress={finishWorkout} />
     </View>
   );
@@ -117,26 +101,16 @@ export default function WorkoutPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#16385e",
+    padding: theme.spacing.medium,
+    backgroundColor: theme.colors.primary,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    marginBottom: 16,
-    textAlign: "center",
-  },
+  title: theme.typography.title,
   input: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.white,
     color: "#000",
     borderRadius: 8,
-    padding: 8,
-    marginBottom: 8,
+    padding: theme.spacing.small,
+    marginBottom: theme.spacing.small,
   },
-  text: {
-    fontSize: 16,
-    color: "#FFFFFF",
-    marginVertical: 4,
-  },
+  text: theme.typography.text,
 });

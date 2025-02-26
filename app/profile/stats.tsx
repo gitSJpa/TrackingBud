@@ -10,25 +10,47 @@ export default function StatsPage() {
   useEffect(() => {
     const loadWorkoutData = async () => {
       try {
+        // Load workout history
+        const storedHistory = await SecureStore.getItemAsync("workoutHistory");
+        const history = storedHistory ? JSON.parse(storedHistory) : [];
+
+        // Calculate stats from history
+        const workoutCount = history.length;
+        const timeSum = history.reduce(
+          (sum, workout) => sum + (workout.duration || 0),
+          0
+        );
+
+        // Load legacy totals from SecureStore (for backward compatibility)
         const storedTotalWorkouts = await SecureStore.getItemAsync(
           "totalWorkouts"
         );
         const storedTotalTime = await SecureStore.getItemAsync("totalTime");
+
+        // Use the larger value between history and stored totals to avoid data loss
         setTotalWorkouts(
-          storedTotalWorkouts ? parseInt(storedTotalWorkouts) : 0
+          Math.max(
+            workoutCount,
+            storedTotalWorkouts ? parseInt(storedTotalWorkouts) : 0
+          )
         );
-        setTotalTime(storedTotalTime ? parseInt(storedTotalTime) : 0);
+        setTotalTime(
+          Math.max(timeSum, storedTotalTime ? parseInt(storedTotalTime) : 0)
+        );
       } catch (error) {
         console.error("Error loading workout data:", error);
+        setTotalWorkouts(0);
+        setTotalTime(0);
       }
     };
     loadWorkoutData();
   }, []);
 
   const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
+    return `${hours > 0 ? `${hours}h ` : ""}${minutes}m ${remainingSeconds}s`;
   };
 
   return (
@@ -51,6 +73,6 @@ const styles = StyleSheet.create({
   title: theme.typography.title,
   text: {
     ...theme.typography.text,
-    fontSize: 18, // Slightly larger as per original
+    fontSize: 18,
   },
 });

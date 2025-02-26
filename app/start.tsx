@@ -16,12 +16,18 @@ export default function WorkoutPage() {
   const [weight, setWeight] = useState("");
   const [reps, setReps] = useState("");
   const [sets, setSets] = useState([]);
+  const [startTime, setStartTime] = useState(null); // Track workout start time
+
+  const startWorkout = () => {
+    setStartTime(Date.now()); // Set start time when workout begins
+  };
 
   const addSet = () => {
     if (!exerciseName || !weight || !reps) {
       Alert.alert("Error", "Please fill in all fields before adding a set.");
       return;
     }
+    if (!startTime) startWorkout(); // Start timing on first set if not already started
     const newSet = {
       name: exerciseName,
       weight: parseFloat(weight),
@@ -40,21 +46,46 @@ export default function WorkoutPage() {
       );
       return;
     }
+    const endTime = Date.now();
+    const duration = startTime ? Math.floor((endTime - startTime) / 1000) : 0; // Duration in seconds
     const newWorkout = {
       date: new Date().toLocaleDateString(),
       exercises: sets,
+      duration,
     };
-    const storedHistory = await SecureStore.getItemAsync("workoutHistory");
-    const updatedHistory = storedHistory
-      ? [...JSON.parse(storedHistory), newWorkout]
-      : [newWorkout];
-    await SecureStore.setItemAsync(
-      "workoutHistory",
-      JSON.stringify(updatedHistory)
-    );
-    setSets([]);
-    setExerciseName("");
-    Alert.alert("Success", "Workout saved!");
+
+    try {
+      const storedHistory = await SecureStore.getItemAsync("workoutHistory");
+      const updatedHistory = storedHistory
+        ? [...JSON.parse(storedHistory), newWorkout]
+        : [newWorkout];
+      await SecureStore.setItemAsync(
+        "workoutHistory",
+        JSON.stringify(updatedHistory)
+      );
+
+      // Update totalWorkouts and totalTime in SecureStore
+      const totalWorkouts = await SecureStore.getItemAsync("totalWorkouts");
+      const newTotalWorkouts = totalWorkouts ? parseInt(totalWorkouts) + 1 : 1;
+      const totalTime = await SecureStore.getItemAsync("totalTime");
+      const newTotalTime = totalTime
+        ? parseInt(totalTime) + duration
+        : duration;
+
+      await SecureStore.setItemAsync(
+        "totalWorkouts",
+        newTotalWorkouts.toString()
+      );
+      await SecureStore.setItemAsync("totalTime", newTotalTime.toString());
+
+      setSets([]);
+      setExerciseName("");
+      setStartTime(null);
+      Alert.alert("Success", "Workout saved!");
+    } catch (error) {
+      console.error("Failed to save workout:", error);
+      Alert.alert("Error", "Couldn’t save workout. Try again.");
+    }
   };
 
   return (

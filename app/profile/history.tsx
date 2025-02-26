@@ -8,8 +8,13 @@ export default function HistoryPage() {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      const history = await SecureStore.getItemAsync("workoutHistory");
-      setWorkoutHistory(history ? JSON.parse(history) : []);
+      try {
+        const history = await SecureStore.getItemAsync("workoutHistory");
+        setWorkoutHistory(history ? JSON.parse(history) : []);
+      } catch (error) {
+        console.error("Error fetching workout history:", error);
+        setWorkoutHistory([]);
+      }
     };
     fetchHistory();
   }, []);
@@ -24,17 +29,47 @@ export default function HistoryPage() {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            const updatedHistory = [...workoutHistory];
-            updatedHistory.splice(index, 1);
-            setWorkoutHistory(updatedHistory);
-            await SecureStore.setItemAsync(
-              "workoutHistory",
-              JSON.stringify(updatedHistory)
-            );
+            try {
+              const updatedHistory = [...workoutHistory];
+              updatedHistory.splice(index, 1);
+              setWorkoutHistory(updatedHistory);
+              await SecureStore.setItemAsync(
+                "workoutHistory",
+                JSON.stringify(updatedHistory)
+              );
+
+              const totalWorkouts = updatedHistory.length;
+              const totalTime = updatedHistory.reduce(
+                (sum, workout) => sum + (workout.duration || 0),
+                0
+              );
+              await SecureStore.setItemAsync(
+                "totalWorkouts",
+                totalWorkouts.toString()
+              );
+              await SecureStore.setItemAsync("totalTime", totalTime.toString());
+            } catch (error) {
+              console.error("Error deleting workout:", error);
+              Alert.alert("Error", "Failed to delete workout.");
+            }
           },
         },
       ]
     );
+  };
+
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    return `${hours > 0 ? `${hours}h ` : ""}${minutes}m ${remainingSeconds}s`;
+  };
+
+  const renderExercise = (exercise) => {
+    if (exercise.reps && exercise.weight) {
+      return `${exercise.name}: ${exercise.reps} reps @ ${exercise.weight}kg`;
+    }
+    return `${exercise.name}: Incomplete data`;
   };
 
   return (
@@ -48,12 +83,14 @@ export default function HistoryPage() {
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item, index }) => (
             <View style={styles.historyItem}>
-              <Text style={styles.text}>Date: {item.date}</Text>
+              <Text style={styles.text}>
+                Date: {item.date}{" "}
+                {item.duration ? `(${formatTime(item.duration)})` : ""}
+              </Text>
               {Array.isArray(item.exercises) && item.exercises.length > 0 ? (
                 item.exercises.map((exercise, idx) => (
                   <Text key={idx} style={styles.text}>
-                    - {exercise.name}: {exercise.reps} reps @ {exercise.weight}{" "}
-                    kg
+                    - {renderExercise(exercise)}
                   </Text>
                 ))
               ) : (

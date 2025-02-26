@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,30 +6,108 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
+import * as SecureStore from "expo-secure-store";
 import { theme } from "../theme";
 
 export default function ProfilePage() {
   const [selectedSection, setSelectedSection] = useState("Stats");
+  const [totalWorkouts, setTotalWorkouts] = useState(0);
+  const [totalTime, setTotalTime] = useState(0);
+  const [totalReps, setTotalReps] = useState(0);
+  const [bestLift, setBestLift] = useState({ name: "", weight: 0 });
+  const [recentWorkouts, setRecentWorkouts] = useState([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const storedHistory = await SecureStore.getItemAsync("workoutHistory");
+        const history = storedHistory ? JSON.parse(storedHistory) : [];
+
+        // Stats Summary
+        setTotalWorkouts(history.length);
+        const timeSum = history.reduce(
+          (sum, workout) => sum + (workout.duration || 0),
+          0
+        );
+        setTotalTime(timeSum);
+        const repsSum = history.reduce(
+          (sum, workout) =>
+            sum +
+            workout.exercises.reduce((exSum, ex) => exSum + (ex.reps || 0), 0),
+          0
+        );
+        setTotalReps(repsSum);
+        let maxWeight = 0;
+        let maxExercise = "";
+        history.forEach((workout) => {
+          workout.exercises.forEach((exercise) => {
+            if (exercise.weight > maxWeight) {
+              maxWeight = exercise.weight;
+              maxExercise = exercise.name;
+            }
+          });
+        });
+        setBestLift({ name: maxExercise, weight: maxWeight });
+
+        // History Summary (last 3 workouts)
+        setRecentWorkouts(history.slice(-3).reverse());
+      } catch (error) {
+        console.error("Error loading profile data:", error);
+      }
+    };
+    loadData();
+  }, []);
+
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    return `${hours > 0 ? `${hours}h ` : ""}${minutes}m ${remainingSeconds}s`;
+  };
 
   const renderContent = () => {
     if (selectedSection === "Stats") {
       return (
         <View>
-          <Text style={styles.sectionTitle}>Stats</Text>
-          <Text style={styles.text}>Total Workouts: 10</Text>
-          <Text style={styles.text}>Best Lift: Deadlift 100kg</Text>
+          <Text style={styles.sectionTitle}>Stats Summary</Text>
+          <Text style={styles.text}>Total Workouts: {totalWorkouts}</Text>
+          <Text style={styles.text}>Total Time: {formatTime(totalTime)}</Text>
+          <Text style={styles.text}>Total Reps: {totalReps}</Text>
+          <Text style={styles.text}>
+            Best Lift:{" "}
+            {bestLift.name
+              ? `${bestLift.name} ${bestLift.weight}kg`
+              : "No lifts recorded"}
+          </Text>
         </View>
       );
     }
     if (selectedSection === "History") {
       return (
         <View>
-          <Text style={styles.sectionTitle}>Workout History</Text>
-          <ScrollView>
-            <Text style={styles.text}>1. Jan 12, 2025 - Chest & Triceps</Text>
-            <Text style={styles.text}>2. Jan 10, 2025 - Legs</Text>
-            <Text style={styles.text}>3. Jan 8, 2025 - Back & Biceps</Text>
-          </ScrollView>
+          <Text style={styles.sectionTitle}>Recent History</Text>
+          {recentWorkouts.length === 0 ? (
+            <Text style={styles.text}>No workouts logged yet.</Text>
+          ) : (
+            <ScrollView>
+              {recentWorkouts.map((workout, index) => (
+                <View key={index} style={styles.historyItem}>
+                  <Text style={styles.text}>
+                    {workout.date}{" "}
+                    {workout.duration
+                      ? `(${formatTime(workout.duration)})`
+                      : ""}
+                  </Text>
+                  {workout.exercises.map((exercise, idx) => (
+                    <Text key={idx} style={styles.text}>
+                      - {exercise.name}: {exercise.reps} reps @{" "}
+                      {exercise.weight}kg
+                    </Text>
+                  ))}
+                </View>
+              ))}
+            </ScrollView>
+          )}
         </View>
       );
     }
@@ -102,4 +180,10 @@ const styles = StyleSheet.create({
   },
   sectionTitle: theme.typography.sectionTitle,
   text: theme.typography.text,
+  historyItem: {
+    backgroundColor: theme.colors.historyItem,
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 8,
+  },
 });

@@ -11,6 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import { theme } from "./theme";
 
 export default function RoutineStart() {
@@ -30,9 +31,13 @@ export default function RoutineStart() {
       })),
     }))
   );
+  const [startTime, setStartTime] = useState(null); // Track workout start time
+  const [newExerciseName, setNewExerciseName] = useState("");
 
   const scrollViewRef = useRef(null);
   const inputRefs = useRef({});
+
+  const startRoutine = () => setStartTime(Date.now());
 
   const updateSet = (exerciseId, setIndex, field, value) => {
     setExercises((prevExercises) =>
@@ -50,6 +55,7 @@ export default function RoutineStart() {
   };
 
   const addSet = (exerciseId) => {
+    if (!startTime) startRoutine(); // Start timing on first interaction
     setExercises((prevExercises) =>
       prevExercises.map((exercise) =>
         exercise.id === exerciseId
@@ -82,12 +88,12 @@ export default function RoutineStart() {
     );
   };
 
-  const [newExerciseName, setNewExerciseName] = useState("");
   const addExercise = () => {
     if (!newExerciseName.trim()) {
       Alert.alert("Error", "Exercise name cannot be empty.");
       return;
     }
+    if (!startTime) startRoutine(); // Start timing on first interaction
     const newExercise = {
       id: Date.now().toString(),
       name: newExerciseName,
@@ -97,9 +103,53 @@ export default function RoutineStart() {
     setNewExerciseName("");
   };
 
-  const finishRoutine = () => {
-    Alert.alert("Routine Complete", "Great job completing your routine!");
-    router.push("/routines");
+  const finishRoutine = async () => {
+    const endTime = Date.now();
+    const duration = startTime ? Math.floor((endTime - startTime) / 1000) : 0; // Duration in seconds
+    const completedWorkout = {
+      date: new Date().toLocaleDateString(),
+      exercises: exercises.map((ex) => ({
+        name: ex.name,
+        reps: ex.sets
+          .map((s) => parseInt(s.reps) || 0)
+          .reduce((a, b) => a + b, 0), // Total reps
+        weight: ex.sets
+          .map((s) => parseFloat(s.weight) || 0)
+          .reduce((a, b) => Math.max(a, b), 0), // Max weight
+      })),
+      duration,
+    };
+
+    try {
+      const storedHistory = await SecureStore.getItemAsync("workoutHistory");
+      const updatedHistory = storedHistory
+        ? [...JSON.parse(storedHistory), completedWorkout]
+        : [completedWorkout];
+      await SecureStore.setItemAsync(
+        "workoutHistory",
+        JSON.stringify(updatedHistory)
+      );
+
+      const totalWorkouts = await SecureStore.getItemAsync("totalWorkouts");
+      const newTotalWorkouts = totalWorkouts ? parseInt(totalWorkouts) + 1 : 1;
+      const totalTime = await SecureStore.getItemAsync("totalTime");
+      const newTotalTime = totalTime
+        ? parseInt(totalTime) + duration
+        : duration;
+
+      await SecureStore.setItemAsync(
+        "totalWorkouts",
+        newTotalWorkouts.toString()
+      );
+      await SecureStore.setItemAsync("totalTime", newTotalTime.toString());
+
+      setStartTime(null);
+      Alert.alert("Routine Complete", "Great job completing your routine!");
+      router.push("/routines");
+    } catch (error) {
+      console.error("Failed to save routine:", error);
+      Alert.alert("Error", "Couldn’t save routine. Try again.");
+    }
   };
 
   const scrollToInput = (inputKey) => {

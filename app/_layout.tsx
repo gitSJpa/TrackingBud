@@ -6,8 +6,14 @@ export default function RootLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
-        tabBarStyle: { backgroundColor: theme.colors.primary },
-        tabBarActiveTintColor: theme.colors.text,
+        tabBarStyle: {
+          backgroundColor: theme.colors.primary,
+          borderTopColor: theme.colors.border,
+          borderTopWidth: 1,
+          paddingBottom: theme.spacing.small,
+          height: 60, // Slightly taller like YouTube
+        },
+        tabBarActiveTintColor: theme.colors.accent, // Yellow for active tab
         tabBarInactiveTintColor: theme.colors.inactiveTab,
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
@@ -20,6 +26,10 @@ export default function RootLayout() {
             iconName = focused ? "person" : "person-outline";
           }
           return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          marginBottom: theme.spacing.small,
         },
       })}
     >

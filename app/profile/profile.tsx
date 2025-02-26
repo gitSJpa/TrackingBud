@@ -22,8 +22,6 @@ export default function ProfilePage() {
       try {
         const storedHistory = await SecureStore.getItemAsync("workoutHistory");
         const history = storedHistory ? JSON.parse(storedHistory) : [];
-
-        // Stats Summary
         setTotalWorkouts(history.length);
         const timeSum = history.reduce(
           (sum, workout) => sum + (workout.duration || 0),
@@ -48,8 +46,6 @@ export default function ProfilePage() {
           });
         });
         setBestLift({ name: maxExercise, weight: maxWeight });
-
-        // History Summary (last 3 workouts)
         setRecentWorkouts(history.slice(-3).reverse());
       } catch (error) {
         console.error("Error loading profile data:", error);
@@ -68,7 +64,7 @@ export default function ProfilePage() {
   const renderContent = () => {
     if (selectedSection === "Stats") {
       return (
-        <View>
+        <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Stats Summary</Text>
           <Text style={styles.text}>Total Workouts: {totalWorkouts}</Text>
           <Text style={styles.text}>Total Time: {formatTime(totalTime)}</Text>
@@ -84,7 +80,7 @@ export default function ProfilePage() {
     }
     if (selectedSection === "History") {
       return (
-        <View>
+        <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Recent History</Text>
           {recentWorkouts.length === 0 ? (
             <Text style={styles.text}>No workouts logged yet.</Text>
@@ -155,22 +151,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.primary,
-    padding: theme.spacing.medium,
+    padding: theme.spacing.large,
   },
   tabs: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginBottom: theme.spacing.medium,
+    marginBottom: theme.spacing.large,
+    backgroundColor: theme.colors.secondary,
+    borderRadius: theme.borderRadius.medium,
+    padding: theme.spacing.small,
   },
   tab: {
-    padding: 10,
-    borderBottomWidth: 2,
-    borderBottomColor: "transparent",
+    padding: theme.spacing.medium,
+    borderRadius: theme.borderRadius.small,
   },
   activeTab: {
-    borderBottomColor: theme.colors.text,
+    backgroundColor: theme.colors.accent, // Yellow highlight
   },
-  tabText: theme.typography.tabText,
+  tabText: {
+    ...theme.typography.tabText,
+    color: theme.colors.textSecondary,
+  },
   activeTabText: {
     color: theme.colors.text,
     fontWeight: "bold",
@@ -178,12 +179,24 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  sectionTitle: theme.typography.sectionTitle,
-  text: theme.typography.text,
+  sectionContainer: {
+    backgroundColor: theme.colors.secondary,
+    padding: theme.spacing.medium,
+    borderRadius: theme.borderRadius.large,
+  },
+  sectionTitle: {
+    ...theme.typography.sectionTitle,
+    marginBottom: theme.spacing.medium,
+  },
+  text: {
+    ...theme.typography.text,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.small,
+  },
   historyItem: {
     backgroundColor: theme.colors.historyItem,
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 8,
+    padding: theme.spacing.medium,
+    marginBottom: theme.spacing.medium,
+    borderRadius: theme.borderRadius.medium,
   },
 });

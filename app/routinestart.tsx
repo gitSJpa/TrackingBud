@@ -31,7 +31,7 @@ export default function RoutineStart() {
       })),
     }))
   );
-  const [startTime, setStartTime] = useState(null); // Track workout start time
+  const [startTime, setStartTime] = useState(null);
   const [newExerciseName, setNewExerciseName] = useState("");
 
   const scrollViewRef = useRef(null);
@@ -55,7 +55,7 @@ export default function RoutineStart() {
   };
 
   const addSet = (exerciseId) => {
-    if (!startTime) startRoutine(); // Start timing on first interaction
+    if (!startTime) startRoutine();
     setExercises((prevExercises) =>
       prevExercises.map((exercise) =>
         exercise.id === exerciseId
@@ -93,7 +93,7 @@ export default function RoutineStart() {
       Alert.alert("Error", "Exercise name cannot be empty.");
       return;
     }
-    if (!startTime) startRoutine(); // Start timing on first interaction
+    if (!startTime) startRoutine();
     const newExercise = {
       id: Date.now().toString(),
       name: newExerciseName,
@@ -105,17 +105,17 @@ export default function RoutineStart() {
 
   const finishRoutine = async () => {
     const endTime = Date.now();
-    const duration = startTime ? Math.floor((endTime - startTime) / 1000) : 0; // Duration in seconds
+    const duration = startTime ? Math.floor((endTime - startTime) / 1000) : 0;
     const completedWorkout = {
       date: new Date().toLocaleDateString(),
       exercises: exercises.map((ex) => ({
         name: ex.name,
         reps: ex.sets
           .map((s) => parseInt(s.reps) || 0)
-          .reduce((a, b) => a + b, 0), // Total reps
+          .reduce((a, b) => a + b, 0),
         weight: ex.sets
           .map((s) => parseFloat(s.weight) || 0)
-          .reduce((a, b) => Math.max(a, b), 0), // Max weight
+          .reduce((a, b) => Math.max(a, b), 0),
       })),
       duration,
     };
@@ -129,20 +129,17 @@ export default function RoutineStart() {
         "workoutHistory",
         JSON.stringify(updatedHistory)
       );
-
       const totalWorkouts = await SecureStore.getItemAsync("totalWorkouts");
       const newTotalWorkouts = totalWorkouts ? parseInt(totalWorkouts) + 1 : 1;
       const totalTime = await SecureStore.getItemAsync("totalTime");
       const newTotalTime = totalTime
         ? parseInt(totalTime) + duration
         : duration;
-
       await SecureStore.setItemAsync(
         "totalWorkouts",
         newTotalWorkouts.toString()
       );
       await SecureStore.setItemAsync("totalTime", newTotalTime.toString());
-
       setStartTime(null);
       Alert.alert("Routine Complete", "Great job completing your routine!");
       router.push("/routines");
@@ -177,11 +174,13 @@ export default function RoutineStart() {
       >
         <Text style={styles.title}>{parsedRoutine.name}</Text>
         {exercises.map((exercise) => (
-          <View key={exercise.id}>
-            <View style={styles.exerciseContainer}>
-              <Text style={styles.exerciseName}>{exercise.name}</Text>
-              <Button title="Add Set" onPress={() => addSet(exercise.id)} />
-            </View>
+          <View key={exercise.id} style={styles.exerciseContainer}>
+            <Text style={styles.exerciseName}>{exercise.name}</Text>
+            <Button
+              title="Add Set"
+              onPress={() => addSet(exercise.id)}
+              color={theme.colors.accent}
+            />
             {exercise.sets.map((set, setIndex) => {
               const repsKey = `${exercise.id}_set${setIndex}_reps`;
               const weightKey = `${exercise.id}_set${setIndex}_weight`;
@@ -191,7 +190,8 @@ export default function RoutineStart() {
                   <TextInput
                     ref={(ref) => (inputRefs.current[repsKey] = ref)}
                     style={styles.input}
-                    placeholder="Enter Reps"
+                    placeholder="Reps"
+                    placeholderTextColor={theme.colors.placeholder}
                     keyboardType="numeric"
                     value={set.reps}
                     onFocus={() => scrollToInput(repsKey)}
@@ -202,7 +202,8 @@ export default function RoutineStart() {
                   <TextInput
                     ref={(ref) => (inputRefs.current[weightKey] = ref)}
                     style={styles.input}
-                    placeholder="Enter Weight"
+                    placeholder="Weight"
+                    placeholderTextColor={theme.colors.placeholder}
                     keyboardType="numeric"
                     value={set.weight}
                     onFocus={() => scrollToInput(weightKey)}
@@ -211,8 +212,8 @@ export default function RoutineStart() {
                     }
                   />
                   <Button
-                    title="Remove Set"
-                    color="red"
+                    title="Remove"
+                    color={theme.colors.accent}
                     onPress={() => removeSet(exercise.id, setIndex)}
                   />
                 </View>
@@ -223,12 +224,21 @@ export default function RoutineStart() {
         <View style={styles.addExerciseContainer}>
           <TextInput
             style={styles.input}
-            placeholder="New Exercise Name"
+            placeholder="New Exercise"
+            placeholderTextColor={theme.colors.placeholder}
             value={newExerciseName}
             onChangeText={setNewExerciseName}
           />
-          <Button title="Add Exercise" onPress={addExercise} />
-          <Button title="Finish Routine" onPress={finishRoutine} />
+          <Button
+            title="Add Exercise"
+            onPress={addExercise}
+            color={theme.colors.accent}
+          />
+          <Button
+            title="Finish Routine"
+            onPress={finishRoutine}
+            color={theme.colors.accent}
+          />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -244,44 +254,51 @@ const styles = StyleSheet.create({
     padding: theme.spacing.large,
     paddingBottom: 150,
   },
-  title: theme.typography.title,
+  title: {
+    ...theme.typography.title,
+    marginBottom: theme.spacing.large,
+  },
   exerciseContainer: {
     backgroundColor: theme.colors.secondary,
-    padding: 15,
-    borderRadius: 5,
-    marginVertical: 10,
+    padding: theme.spacing.medium,
+    borderRadius: theme.borderRadius.large,
+    marginBottom: theme.spacing.medium,
   },
   exerciseName: {
     fontSize: 20,
     color: theme.colors.text,
-    marginBottom: 10,
+    marginBottom: theme.spacing.medium,
     textAlign: "center",
   },
   setContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: theme.colors.accent,
-    padding: 10,
-    borderRadius: 5,
-    marginVertical: 5,
+    backgroundColor: theme.colors.historyItem,
+    padding: theme.spacing.medium,
+    borderRadius: theme.borderRadius.medium,
+    marginVertical: theme.spacing.small,
   },
   setLabel: {
     fontSize: 16,
-    color: theme.colors.text,
-    marginRight: 10,
+    color: theme.colors.textSecondary,
+    marginRight: theme.spacing.medium,
   },
   input: {
     borderWidth: 1,
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.white,
-    borderRadius: 5,
-    padding: 8,
-    width: 100,
+    borderRadius: theme.borderRadius.medium,
+    padding: theme.spacing.small,
+    width: 80,
     textAlign: "center",
+    color: "#000",
   },
   addExerciseContainer: {
+    backgroundColor: theme.colors.secondary,
     padding: theme.spacing.large,
+    borderRadius: theme.borderRadius.large,
     alignItems: "center",
+    marginTop: theme.spacing.large,
   },
 });

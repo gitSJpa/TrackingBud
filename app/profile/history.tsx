@@ -37,7 +37,6 @@ export default function HistoryPage() {
                 "workoutHistory",
                 JSON.stringify(updatedHistory)
               );
-
               const totalWorkouts = updatedHistory.length;
               const totalTime = updatedHistory.reduce(
                 (sum, workout) => sum + (workout.duration || 0),
@@ -84,7 +83,7 @@ export default function HistoryPage() {
           renderItem={({ item, index }) => (
             <View style={styles.historyItem}>
               <Text style={styles.text}>
-                Date: {item.date}{" "}
+                {item.date}{" "}
                 {item.duration ? `(${formatTime(item.duration)})` : ""}
               </Text>
               {Array.isArray(item.exercises) && item.exercises.length > 0 ? (
@@ -98,7 +97,7 @@ export default function HistoryPage() {
               )}
               <Button
                 title="Delete"
-                color="red"
+                color={theme.colors.accent}
                 onPress={() => deleteWorkout(index)}
               />
             </View>
@@ -112,15 +111,22 @@ export default function HistoryPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: theme.spacing.medium,
+    padding: theme.spacing.large,
     backgroundColor: theme.colors.primary,
   },
-  title: theme.typography.title,
-  text: theme.typography.text,
+  title: {
+    ...theme.typography.title,
+    marginBottom: theme.spacing.large,
+  },
+  text: {
+    ...theme.typography.text,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.small,
+  },
   historyItem: {
     backgroundColor: theme.colors.historyItem,
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 8,
+    padding: theme.spacing.medium,
+    marginBottom: theme.spacing.medium,
+    borderRadius: theme.borderRadius.medium,
   },
 });

@@ -10,7 +10,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const fetchWorkoutCount = async () => {
-      const count = await SecureStore.getItemAsync("workoutCount");
+      const count = await SecureStore.getItemAsync("totalWorkouts");
       setWorkoutCount(count ? parseInt(count) : 0);
     };
     fetchWorkoutCount();
@@ -23,9 +23,17 @@ export default function HomePage() {
     <View style={styles.container}>
       <Text style={styles.title}>Welcome!</Text>
       <Text style={styles.text}>Total Workouts: {workoutCount}</Text>
-      <Button title="Start Workout" onPress={startWorkout} />
+      <Button
+        title="Start Workout"
+        onPress={startWorkout}
+        color={theme.colors.accent} // Yellow button
+      />
       <View style={styles.buttonSpacer}>
-        <Button title="View History" onPress={viewHistory} />
+        <Button
+          title="View History"
+          onPress={viewHistory}
+          color={theme.colors.accent}
+        />
       </View>
     </View>
   );
@@ -37,10 +45,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: theme.colors.primary,
-    padding: theme.spacing.medium,
+    padding: theme.spacing.large,
   },
-  title: theme.typography.title,
-  text: theme.typography.text,
+  title: {
+    ...theme.typography.title,
+    marginBottom: theme.spacing.large,
+  },
+  text: {
+    ...theme.typography.text,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.large,
+  },
   buttonSpacer: {
     marginTop: theme.spacing.medium,
   },

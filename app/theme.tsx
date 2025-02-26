@@ -1,20 +1,21 @@
 // app/theme.js
 export const theme = {
   colors: {
-    primary: "#16385e", // Main background
-    secondary: "#204b7d", // Exercise/routine item background
-    accent: "#3066be", // Set container background
-    text: "#FFFFFF", // Primary text
-    placeholder: "#ccc", // Placeholder text
-    inactiveTab: "#7A9EB1", // Inactive tab color
+    primary: "#121212", // Darker background like YouTube’s black
+    secondary: "#1E1E1E", // Slightly lighter dark gray for containers
+    accent: "#FFC107", // Vibrant yellow replacing YouTube’s red
+    text: "#FFFFFF", // Bright white for primary text
+    textSecondary: "#B0B0B0", // Light gray for secondary text
+    placeholder: "#757575", // Mid-gray for placeholders
+    inactiveTab: "#757575", // Muted gray for inactive tabs
     white: "#FFFFFF", // Pure white for inputs
-    border: "#ddd", // Input borders
-    historyItem: "#2d517f", // History item background
+    border: "#424242", // Dark gray for borders
+    historyItem: "#282828", // Slightly lighter than secondary for history items
   },
   spacing: {
     small: 8,
     medium: 16,
-    large: 20,
+    large: 24, // Slightly increased for a more spacious feel
   },
   typography: {
     title: {
@@ -33,7 +34,12 @@ export const theme = {
     },
     tabText: {
       fontSize: 16,
-      color: "#7A9EB1",
+      color: "#757575",
     },
+  },
+  borderRadius: {
+    small: 4,
+    medium: 8,
+    large: 12, // For rounded corners like YouTube
   },
 };

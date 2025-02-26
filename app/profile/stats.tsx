@@ -10,24 +10,17 @@ export default function StatsPage() {
   useEffect(() => {
     const loadWorkoutData = async () => {
       try {
-        // Load workout history
         const storedHistory = await SecureStore.getItemAsync("workoutHistory");
         const history = storedHistory ? JSON.parse(storedHistory) : [];
-
-        // Calculate stats from history
         const workoutCount = history.length;
         const timeSum = history.reduce(
           (sum, workout) => sum + (workout.duration || 0),
           0
         );
-
-        // Load legacy totals from SecureStore (for backward compatibility)
         const storedTotalWorkouts = await SecureStore.getItemAsync(
           "totalWorkouts"
         );
         const storedTotalTime = await SecureStore.getItemAsync("totalTime");
-
-        // Use the larger value between history and stored totals to avoid data loss
         setTotalWorkouts(
           Math.max(
             workoutCount,
@@ -56,10 +49,12 @@ export default function StatsPage() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Workout Stats</Text>
-      <Text style={styles.text}>Total Workouts: {totalWorkouts}</Text>
-      <Text style={styles.text}>
-        Total Time Worked Out: {formatTime(totalTime)}
-      </Text>
+      <View style={styles.statsContainer}>
+        <Text style={styles.text}>Total Workouts: {totalWorkouts}</Text>
+        <Text style={styles.text}>
+          Total Time Worked Out: {formatTime(totalTime)}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -67,12 +62,22 @@ export default function StatsPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: theme.spacing.medium,
+    padding: theme.spacing.large,
     backgroundColor: theme.colors.primary,
   },
-  title: theme.typography.title,
+  title: {
+    ...theme.typography.title,
+    marginBottom: theme.spacing.large,
+  },
+  statsContainer: {
+    backgroundColor: theme.colors.secondary,
+    padding: theme.spacing.medium,
+    borderRadius: theme.borderRadius.large,
+  },
   text: {
     ...theme.typography.text,
+    color: theme.colors.textSecondary,
     fontSize: 18,
+    marginBottom: theme.spacing.medium,
   },
 });

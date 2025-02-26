@@ -74,7 +74,7 @@ export default function CreateRoutine() {
       <Text style={styles.title}>Create a New Routine</Text>
       <TextInput
         style={styles.input}
-        placeholder="Enter routine name"
+        placeholder="Routine Name"
         placeholderTextColor={theme.colors.placeholder}
         value={routineName}
         onChangeText={setRoutineName}
@@ -82,12 +82,16 @@ export default function CreateRoutine() {
       <View style={styles.addExerciseContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Enter exercise name"
+          placeholder="Exercise Name"
           placeholderTextColor={theme.colors.placeholder}
           value={exerciseInput}
           onChangeText={setExerciseInput}
         />
-        <Button title="Add Exercise" onPress={addExercise} />
+        <Button
+          title="Add Exercise"
+          onPress={addExercise}
+          color={theme.colors.accent}
+        />
       </View>
       <FlatList
         data={exercises}
@@ -98,18 +102,30 @@ export default function CreateRoutine() {
               {item.name} - {item.sets} sets
             </Text>
             <View style={styles.exerciseControls}>
-              <Button title="+" onPress={() => updateSets(item.id, 1)} />
-              <Button title="-" onPress={() => updateSets(item.id, -1)} />
+              <Button
+                title="+"
+                onPress={() => updateSets(item.id, 1)}
+                color={theme.colors.accent}
+              />
+              <Button
+                title="-"
+                onPress={() => updateSets(item.id, -1)}
+                color={theme.colors.accent}
+              />
               <Button
                 title="Remove"
-                color="red"
+                color={theme.colors.accent}
                 onPress={() => removeExercise(item.id)}
               />
             </View>
           </View>
         )}
       />
-      <Button title="Save Routine" onPress={saveRoutine} />
+      <Button
+        title="Save Routine"
+        onPress={saveRoutine}
+        color={theme.colors.accent}
+      />
     </View>
   );
 }
@@ -120,14 +136,17 @@ const styles = StyleSheet.create({
     padding: theme.spacing.large,
     backgroundColor: theme.colors.primary,
   },
-  title: theme.typography.title,
+  title: {
+    ...theme.typography.title,
+    marginBottom: theme.spacing.large,
+  },
   input: {
     flex: 1,
     borderWidth: 1,
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.white,
-    borderRadius: 5,
-    padding: 10,
+    borderRadius: theme.borderRadius.medium,
+    padding: theme.spacing.medium,
     marginVertical: theme.spacing.small,
     color: "#000",
   },
@@ -135,20 +154,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    backgroundColor: theme.colors.secondary,
+    padding: theme.spacing.medium,
+    borderRadius: theme.borderRadius.large,
+    marginBottom: theme.spacing.large,
   },
   exerciseItem: {
-    backgroundColor: theme.colors.secondary,
-    padding: 15,
-    borderRadius: 5,
-    marginVertical: 5,
+    backgroundColor: theme.colors.historyItem,
+    padding: theme.spacing.medium,
+    borderRadius: theme.borderRadius.medium,
+    marginVertical: theme.spacing.small,
   },
   exerciseText: {
     fontSize: 18,
-    color: theme.colors.text,
+    color: theme.colors.textSecondary,
   },
   exerciseControls: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
+    marginTop: theme.spacing.medium,
   },
 });

@@ -62,10 +62,11 @@ export default function Routines() {
                 <Button
                   title="Start Workout"
                   onPress={() => startWorkout(item)}
+                  color={theme.colors.accent}
                 />
                 <Button
                   title="Delete"
-                  color="red"
+                  color={theme.colors.accent}
                   onPress={() => deleteRoutine(item.id)}
                 />
               </View>
@@ -83,24 +84,29 @@ const styles = StyleSheet.create({
     padding: theme.spacing.large,
     backgroundColor: theme.colors.primary,
   },
-  title: theme.typography.title,
+  title: {
+    ...theme.typography.title,
+    marginBottom: theme.spacing.large,
+  },
   noRoutinesText: {
     ...theme.typography.text,
+    color: theme.colors.textSecondary,
     textAlign: "center",
+    marginTop: theme.spacing.large,
   },
   routineItem: {
-    backgroundColor: theme.colors.secondary,
-    padding: 15,
-    borderRadius: 5,
-    marginBottom: 10,
+    backgroundColor: theme.colors.historyItem,
+    padding: theme.spacing.medium,
+    borderRadius: theme.borderRadius.medium,
+    marginBottom: theme.spacing.medium,
   },
   routineName: {
     fontSize: 18,
     color: theme.colors.text,
+    marginBottom: theme.spacing.medium,
   },
   buttons: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
   },
 });

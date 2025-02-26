@@ -16,10 +16,10 @@ export default function WorkoutPage() {
   const [weight, setWeight] = useState("");
   const [reps, setReps] = useState("");
   const [sets, setSets] = useState([]);
-  const [startTime, setStartTime] = useState(null); // Track workout start time
+  const [startTime, setStartTime] = useState(null);
 
   const startWorkout = () => {
-    setStartTime(Date.now()); // Set start time when workout begins
+    setStartTime(Date.now());
   };
 
   const addSet = () => {
@@ -27,7 +27,7 @@ export default function WorkoutPage() {
       Alert.alert("Error", "Please fill in all fields before adding a set.");
       return;
     }
-    if (!startTime) startWorkout(); // Start timing on first set if not already started
+    if (!startTime) startWorkout();
     const newSet = {
       name: exerciseName,
       weight: parseFloat(weight),
@@ -47,7 +47,7 @@ export default function WorkoutPage() {
       return;
     }
     const endTime = Date.now();
-    const duration = startTime ? Math.floor((endTime - startTime) / 1000) : 0; // Duration in seconds
+    const duration = startTime ? Math.floor((endTime - startTime) / 1000) : 0;
     const newWorkout = {
       date: new Date().toLocaleDateString(),
       exercises: sets,
@@ -63,21 +63,17 @@ export default function WorkoutPage() {
         "workoutHistory",
         JSON.stringify(updatedHistory)
       );
-
-      // Update totalWorkouts and totalTime in SecureStore
       const totalWorkouts = await SecureStore.getItemAsync("totalWorkouts");
       const newTotalWorkouts = totalWorkouts ? parseInt(totalWorkouts) + 1 : 1;
       const totalTime = await SecureStore.getItemAsync("totalTime");
       const newTotalTime = totalTime
         ? parseInt(totalTime) + duration
         : duration;
-
       await SecureStore.setItemAsync(
         "totalWorkouts",
         newTotalWorkouts.toString()
       );
       await SecureStore.setItemAsync("totalTime", newTotalTime.toString());
-
       setSets([]);
       setExerciseName("");
       setStartTime(null);
@@ -91,30 +87,32 @@ export default function WorkoutPage() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Start Workout</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Exercise Name"
-        placeholderTextColor={theme.colors.placeholder}
-        value={exerciseName}
-        onChangeText={setExerciseName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Weight (kg)"
-        placeholderTextColor={theme.colors.placeholder}
-        value={weight}
-        onChangeText={setWeight}
-        keyboardType="numeric"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Reps"
-        placeholderTextColor={theme.colors.placeholder}
-        value={reps}
-        onChangeText={setReps}
-        keyboardType="numeric"
-      />
-      <Button title="Add Set" onPress={addSet} />
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Exercise Name"
+          placeholderTextColor={theme.colors.placeholder}
+          value={exerciseName}
+          onChangeText={setExerciseName}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Weight (kg)"
+          placeholderTextColor={theme.colors.placeholder}
+          value={weight}
+          onChangeText={setWeight}
+          keyboardType="numeric"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Reps"
+          placeholderTextColor={theme.colors.placeholder}
+          value={reps}
+          onChangeText={setReps}
+          keyboardType="numeric"
+        />
+        <Button title="Add Set" onPress={addSet} color={theme.colors.accent} />
+      </View>
       <FlatList
         data={sets}
         keyExtractor={(item, index) => `${item.name}_${index}`}
@@ -124,7 +122,11 @@ export default function WorkoutPage() {
           </Text>
         )}
       />
-      <Button title="Finish Workout" onPress={finishWorkout} />
+      <Button
+        title="Finish Workout"
+        onPress={finishWorkout}
+        color={theme.colors.accent}
+      />
     </View>
   );
 }
@@ -132,16 +134,29 @@ export default function WorkoutPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: theme.spacing.medium,
+    padding: theme.spacing.large,
     backgroundColor: theme.colors.primary,
   },
-  title: theme.typography.title,
+  title: {
+    ...theme.typography.title,
+    marginBottom: theme.spacing.large,
+  },
+  inputContainer: {
+    backgroundColor: theme.colors.secondary,
+    padding: theme.spacing.medium,
+    borderRadius: theme.borderRadius.large,
+    marginBottom: theme.spacing.large,
+  },
   input: {
     backgroundColor: theme.colors.white,
     color: "#000",
-    borderRadius: 8,
-    padding: theme.spacing.small,
+    borderRadius: theme.borderRadius.medium,
+    padding: theme.spacing.medium,
+    marginBottom: theme.spacing.medium,
+  },
+  text: {
+    ...theme.typography.text,
+    color: theme.colors.textSecondary,
     marginBottom: theme.spacing.small,
   },
-  text: theme.typography.text,
 });

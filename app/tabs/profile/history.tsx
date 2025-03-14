@@ -1,7 +1,7 @@
 import { View, Text, FlatList, StyleSheet, Button, Alert } from "react-native";
 import { useState, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
-import { theme } from "../theme";
+import { theme } from "../../../theme-config";
 
 export default function HistoryPage() {
   const [workoutHistory, setWorkoutHistory] = useState([]);
@@ -68,7 +68,9 @@ export default function HistoryPage() {
     if (exercise.reps && exercise.weight) {
       return `${exercise.name}: ${exercise.reps} reps @ ${exercise.weight}kg`;
     }
-    return `${exercise.name}: Incomplete data`;
+    return `${exercise.name}: ${exercise.reps || "No reps"} @ ${
+      exercise.weight || "No weight"
+    }`;
   };
 
   return (

@@ -1,50 +1,36 @@
-import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { theme } from "./theme";
+import { Stack } from "expo-router";
+import { getAuth } from "firebase/auth";
+import { app as firebaseApp } from "../config/firebase-config";
+import { useEffect, useState } from "react";
+import { View, Text } from "react-native";
 
 export default function RootLayout() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const auth = getAuth(firebaseApp);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      console.log("Auth state:", currentUser ? "Logged in" : "Logged out");
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
   return (
-    <Tabs
-      screenOptions={({ route }) => ({
-        tabBarStyle: {
-          backgroundColor: theme.colors.primary,
-          borderTopColor: theme.colors.border,
-          borderTopWidth: 1,
-          paddingBottom: theme.spacing.small,
-          height: 60, // Slightly taller like YouTube
-        },
-        tabBarActiveTintColor: theme.colors.accent, // Yellow for active tab
-        tabBarInactiveTintColor: theme.colors.inactiveTab,
-        headerShown: false,
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-          if (route.name === "index") {
-            iconName = focused ? "home" : "home-outline";
-          } else if (route.name === "workout") {
-            iconName = focused ? "barbell" : "barbell-outline";
-          } else if (route.name === "profile/profile") {
-            iconName = focused ? "person" : "person-outline";
-          }
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          marginBottom: theme.spacing.small,
-        },
-      })}
-    >
-      <Tabs.Screen name="index" options={{ tabBarLabel: "Home" }} />
-      <Tabs.Screen name="workout" options={{ tabBarLabel: "Workout" }} />
-      <Tabs.Screen name="start" options={{ href: null }} />
-      <Tabs.Screen name="createroutine" options={{ href: null }} />
-      <Tabs.Screen name="routines" options={{ href: null }} />
-      <Tabs.Screen name="routinestart" options={{ href: null }} />
-      <Tabs.Screen
-        name="profile/profile"
-        options={{ tabBarLabel: "Profile" }}
-      />
-      <Tabs.Screen name="profile/history" options={{ href: null }} />
-      <Tabs.Screen name="profile/stats" options={{ href: null }} />
-    </Tabs>
+    <Stack>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="tabs" options={{ headerShown: false }} />
+      <Stack.Screen name="login" options={{ headerShown: false }} />
+    </Stack>
   );
 }

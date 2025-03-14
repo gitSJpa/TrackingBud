@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, StyleSheet, Button, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { theme } from "./theme";
+import { theme } from "../../theme-config";
 
 export default function Routines() {
   const [routines, setRoutines] = useState([]);

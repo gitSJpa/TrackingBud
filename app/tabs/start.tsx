@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
-import { theme } from "./theme";
+import { theme } from "../../theme-config";
 
 export default function WorkoutPage() {
   const [exerciseName, setExerciseName] = useState("");

@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
-import { theme } from "../theme";
+import { theme } from "../../../theme-config";
 
 export default function ProfilePage() {
   const [selectedSection, setSelectedSection] = useState("Stats");
@@ -16,12 +16,14 @@ export default function ProfilePage() {
   const [totalReps, setTotalReps] = useState(0);
   const [bestLift, setBestLift] = useState({ name: "", weight: 0 });
   const [recentWorkouts, setRecentWorkouts] = useState([]);
+  const [weekData, setWeekData] = useState([]);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         const storedHistory = await SecureStore.getItemAsync("workoutHistory");
         const history = storedHistory ? JSON.parse(storedHistory) : [];
+
         setTotalWorkouts(history.length);
         const timeSum = history.reduce(
           (sum, workout) => sum + (workout.duration || 0),
@@ -47,6 +49,28 @@ export default function ProfilePage() {
         });
         setBestLift({ name: maxExercise, weight: maxWeight });
         setRecentWorkouts(history.slice(-3).reverse());
+
+        const now = new Date();
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(
+          now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)
+        );
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        const weekDays = Array.from({ length: 7 }, (_, i) => {
+          const day = new Date(startOfWeek);
+          day.setDate(startOfWeek.getDate() + i);
+          const dateStr = day.toLocaleDateString();
+          const hasWorkout = history.some(
+            (workout) => workout.date === dateStr
+          );
+          return {
+            date: dateStr,
+            dayName: day.toLocaleDateString("en-US", { weekday: "short" }),
+            hasWorkout,
+          };
+        });
+        setWeekData(weekDays);
       } catch (error) {
         console.error("Error loading profile data:", error);
       }
@@ -75,6 +99,30 @@ export default function ProfilePage() {
               ? `${bestLift.name} ${bestLift.weight}kg`
               : "No lifts recorded"}
           </Text>
+          <View style={styles.weekContainer}>
+            <Text style={styles.weekTitle}>This Week</Text>
+            <View style={styles.weekDays}>
+              {weekData.map((day, index) => (
+                <View
+                  key={index}
+                  style={[styles.dayBox, day.hasWorkout && styles.workoutDay]}
+                >
+                  <Text
+                    style={[
+                      styles.dayText,
+                      day.hasWorkout && styles.workoutDayText,
+                    ]}
+                  >
+                    {day.dayName}
+                  </Text>
+                </View>
+              ))}
+            </View>
+            <Text style={styles.weekSummary}>
+              Workouts this week:{" "}
+              {weekData.filter((day) => day.hasWorkout).length}
+            </Text>
+          </View>
         </View>
       );
     }
@@ -166,7 +214,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.small,
   },
   activeTab: {
-    backgroundColor: theme.colors.accent, // Yellow highlight
+    backgroundColor: theme.colors.accent,
   },
   tabText: {
     ...theme.typography.tabText,
@@ -198,5 +246,51 @@ const styles = StyleSheet.create({
     padding: theme.spacing.medium,
     marginBottom: theme.spacing.medium,
     borderRadius: theme.borderRadius.medium,
+  },
+  weekContainer: {
+    marginTop: theme.spacing.large,
+    padding: theme.spacing.medium,
+    backgroundColor: theme.colors.historyItem,
+    borderRadius: theme.borderRadius.large,
+  },
+  weekTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: theme.colors.text,
+    marginBottom: theme.spacing.medium,
+  },
+  weekDays: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: theme.spacing.medium,
+  },
+  dayBox: {
+    width: 40,
+    height: 40,
+    borderRadius: theme.borderRadius.medium,
+    backgroundColor: theme.colors.secondary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  workoutDay: {
+    backgroundColor: theme.colors.accent,
+    shadowColor: theme.colors.accent,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  dayText: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+  },
+  workoutDayText: {
+    color: theme.colors.text,
+    fontWeight: "bold",
+  },
+  weekSummary: {
+    ...theme.typography.text,
+    color: theme.colors.textSecondary,
+    textAlign: "center",
   },
 });

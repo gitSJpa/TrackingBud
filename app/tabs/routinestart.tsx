@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { theme } from "./theme";
+import { theme } from "../../theme-config";
 
 export default function RoutineStart() {
   const router = useRouter();

@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { theme } from "./theme";
+import { theme } from "../../theme-config";
 
 export default function CreateRoutine() {
   const [routineName, setRoutineName] = useState("");

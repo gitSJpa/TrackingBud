@@ -1,6 +1,6 @@
 import { View, Text, Button, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { theme } from "./theme";
+import { theme } from "../../theme-config";
 
 export default function WorkoutPage() {
   const router = useRouter();
@@ -12,7 +12,7 @@ export default function WorkoutPage() {
         <Text style={styles.sectionTitle}>Quick Start</Text>
         <Button
           title="Start Workout"
-          onPress={() => router.push("/start")}
+          onPress={() => router.push("/tabs/start")}
           color={theme.colors.accent}
         />
       </View>
@@ -20,14 +20,16 @@ export default function WorkoutPage() {
         <Text style={styles.sectionTitle}>Routines</Text>
         <Button
           title="Create Routine"
-          onPress={() => router.push("/createroutine")}
+          onPress={() => router.push("/tabs/createroutine")}
           color={theme.colors.accent}
         />
-        <Button
-          title="Start Routine"
-          onPress={() => router.push("/routines")}
-          color={theme.colors.accent}
-        />
+        <View style={styles.buttonSpacer}>
+          <Button
+            title="Start Routine"
+            onPress={() => router.push("/tabs/routines")}
+            color={theme.colors.accent}
+          />
+        </View>
       </View>
     </View>
   );
@@ -52,5 +54,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     ...theme.typography.sectionTitle,
     marginBottom: theme.spacing.medium,
+  },
+  buttonSpacer: {
+    marginTop: theme.spacing.small,
   },
 });

@@ -9,6 +9,7 @@ import { app as firebaseApp } from "../../config/firebase-config";
 export default function HomePage() {
   const [workoutCount, setWorkoutCount] = useState(0);
   const [user, setUser] = useState(null);
+  const [userName, setUserName] = useState(""); // Added userName state
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const auth = getAuth(firebaseApp);
@@ -17,6 +18,7 @@ export default function HomePage() {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       if (currentUser) {
         setUser(currentUser);
+        setUserName(currentUser.displayName || "User"); // Use displayName or fallback
       } else {
         router.replace("/login");
       }
@@ -65,7 +67,7 @@ export default function HomePage() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome, {user.email}!</Text>
+      <Text style={styles.title}>Welcome, {userName}!</Text>
       <Text style={styles.text}>Total Workouts: {workoutCount}</Text>
       <Button
         title="Start Workout"

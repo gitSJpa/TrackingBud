@@ -8,6 +8,8 @@ import {
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { theme } from "../../../theme-config";
+import { getAuth } from "firebase/auth";
+import { app as firebaseApp } from "../../../config/firebase-config";
 
 export default function ProfilePage() {
   const [selectedSection, setSelectedSection] = useState("Stats");
@@ -17,6 +19,8 @@ export default function ProfilePage() {
   const [bestLift, setBestLift] = useState({ name: "", weight: 0 });
   const [recentWorkouts, setRecentWorkouts] = useState([]);
   const [weekData, setWeekData] = useState([]);
+  const [userName, setUserName] = useState(""); // Added userName state
+  const auth = getAuth(firebaseApp);
 
   useEffect(() => {
     const loadData = async () => {
@@ -71,12 +75,17 @@ export default function ProfilePage() {
           };
         });
         setWeekData(weekDays);
+
+        // Set user name from Firebase
+        if (auth.currentUser) {
+          setUserName(auth.currentUser.displayName || "User");
+        }
       } catch (error) {
         console.error("Error loading profile data:", error);
       }
     };
     loadData();
-  }, []);
+  }, [auth.currentUser]);
 
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);
@@ -159,6 +168,9 @@ export default function ProfilePage() {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.profileTitle}>Profile</Text>
+      <Text style={styles.profileText}>Name: {userName}</Text>
+      <Text style={styles.profileText}>Email: {auth.currentUser?.email}</Text>
       <View style={styles.tabs}>
         <TouchableOpacity
           style={[styles.tab, selectedSection === "Stats" && styles.activeTab]}
@@ -200,6 +212,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.primary,
     padding: theme.spacing.large,
+  },
+  profileTitle: {
+    ...theme.typography.title,
+    marginBottom: theme.spacing.medium,
+  },
+  profileText: {
+    ...theme.typography.text,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.small,
   },
   tabs: {
     flexDirection: "row",

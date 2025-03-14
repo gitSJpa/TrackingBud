@@ -5,6 +5,7 @@ import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  updateProfile,
 } from "firebase/auth";
 import { app as firebaseApp } from "../config/firebase-config";
 import { theme } from "../theme-config";
@@ -12,6 +13,7 @@ import { theme } from "../theme-config";
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState(""); // Added name state
   const [isSignUp, setIsSignUp] = useState(false);
   const router = useRouter();
   const auth = getAuth(firebaseApp);
@@ -19,7 +21,12 @@ export default function LoginScreen() {
   const handleAuth = async () => {
     try {
       if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        await updateProfile(userCredential.user, { displayName: name }); // Store name
         Alert.alert("Success", "Account created! Logging you in...");
       } else {
         await signInWithEmailAndPassword(auth, email, password);
@@ -34,6 +41,16 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{isSignUp ? "Sign Up" : "Login"}</Text>
+      {isSignUp && (
+        <TextInput
+          style={styles.input}
+          placeholder="Name"
+          placeholderTextColor={theme.colors.placeholder}
+          value={name}
+          onChangeText={setName}
+          autoCapitalize="words"
+        />
+      )}
       <TextInput
         style={styles.input}
         placeholder="Email"

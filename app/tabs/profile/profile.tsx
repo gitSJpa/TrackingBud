@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,10 +7,13 @@ import {
   ScrollView,
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
-import { theme } from "../../../theme-config";
 import { getAuth } from "firebase/auth";
 import { app as firebaseApp } from "../../../config/firebase-config";
-import { formatDate } from "../../../utils/dateUtils"; // Added import
+import { useFocusEffect } from "@react-navigation/native";
+import { theme } from "../../../theme-config";
+import { Ionicons } from "@expo/vector-icons"; // Added import
+
+const formatDate = (date) => date.toISOString().split("T")[0];
 
 export default function ProfilePage() {
   const [selectedSection, setSelectedSection] = useState("Stats");
@@ -23,70 +26,82 @@ export default function ProfilePage() {
   const [userName, setUserName] = useState("");
   const auth = getAuth(firebaseApp);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const storedHistory = await SecureStore.getItemAsync("workoutHistory");
-        const history = storedHistory ? JSON.parse(storedHistory) : [];
+  const loadData = useCallback(async () => {
+    console.log("Loading data for ProfilePage");
+    try {
+      const storedHistory = await SecureStore.getItemAsync("workoutHistory");
+      console.log("Stored history:", storedHistory);
+      const history = storedHistory ? JSON.parse(storedHistory) : [];
+      console.log("Parsed history length:", history.length);
 
-        setTotalWorkouts(history.length);
-        const timeSum = history.reduce(
-          (sum, workout) => sum + (workout.duration || 0),
-          0
-        );
-        setTotalTime(timeSum);
-        const repsSum = history.reduce(
-          (sum, workout) =>
-            sum +
-            workout.exercises.reduce((exSum, ex) => exSum + (ex.reps || 0), 0),
-          0
-        );
-        setTotalReps(repsSum);
-        let maxWeight = 0;
-        let maxExercise = "";
-        history.forEach((workout) => {
-          workout.exercises.forEach((exercise) => {
-            if (exercise.weight > maxWeight) {
-              maxWeight = exercise.weight;
-              maxExercise = exercise.name;
-            }
-          });
+      setTotalWorkouts(history.length);
+      const timeSum = history.reduce(
+        (sum, workout) => sum + (workout.duration || 0),
+        0
+      );
+      setTotalTime(timeSum);
+      const repsSum = history.reduce(
+        (sum, workout) =>
+          sum +
+          workout.exercises.reduce((exSum, ex) => exSum + (ex.reps || 0), 0),
+        0
+      );
+      setTotalReps(repsSum);
+
+      let maxWeight = 0;
+      let maxExercise = "";
+      history.forEach((workout) => {
+        workout.exercises.forEach((exercise) => {
+          if ((exercise.weight || 0) > maxWeight) {
+            maxWeight = exercise.weight;
+            maxExercise = exercise.name;
+          }
         });
-        setBestLift({ name: maxExercise, weight: maxWeight });
-        setRecentWorkouts(history.slice(-3).reverse());
+      });
+      setBestLift({ name: maxExercise, weight: maxWeight });
 
-        // Calculate weekly workout data
-        const now = new Date();
-        const startOfWeek = new Date(now);
-        startOfWeek.setDate(
-          now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)
-        );
-        startOfWeek.setHours(0, 0, 0, 0);
+      setRecentWorkouts(history.slice(-3).reverse());
 
-        const weekDays = Array.from({ length: 7 }, (_, i) => {
-          const day = new Date(startOfWeek);
-          day.setDate(startOfWeek.getDate() + i);
-          const dateStr = formatDate(day); // Changed to formatDate
-          const hasWorkout = history.some(
-            (workout) => workout.date === dateStr
-          );
-          return {
-            date: dateStr,
-            dayName: day.toLocaleDateString("en-US", { weekday: "short" }),
-            hasWorkout,
-          };
-        });
-        setWeekData(weekDays);
+      const now = new Date();
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(
+        now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)
+      );
+      startOfWeek.setHours(0, 0, 0, 0);
 
-        if (auth.currentUser) {
-          setUserName(auth.currentUser.displayName || "User");
-        }
-      } catch (error) {
-        console.error("Error loading profile data:", error);
+      const weekDays = Array.from({ length: 7 }, (_, i) => {
+        const day = new Date(startOfWeek);
+        day.setDate(startOfWeek.getDate() + i);
+        const dateStr = formatDate(day);
+        const hasWorkout = history.some((workout) => workout.date === dateStr);
+        return {
+          date: dateStr,
+          dayName: day.toLocaleDateString("en-US", { weekday: "short" }),
+          hasWorkout,
+        };
+      });
+      setWeekData(weekDays);
+
+      if (auth.currentUser) {
+        setUserName(auth.currentUser.displayName || "User");
       }
-    };
-    loadData();
+    } catch (error) {
+      console.error("Error loading profile data:", error);
+      setTotalWorkouts(0);
+      setTotalTime(0);
+      setTotalReps(0);
+      setBestLift({ name: "", weight: 0 });
+      setRecentWorkouts([]);
+      setWeekData([]);
+    }
   }, [auth.currentUser]);
+
+  useFocusEffect(
+    useCallback(() => {
+      console.log("ProfilePage focused");
+      loadData();
+    }, [loadData])
+  );
 
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);
@@ -96,75 +111,81 @@ export default function ProfilePage() {
   };
 
   const renderContent = () => {
-    if (selectedSection === "Stats") {
-      return (
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Stats Summary</Text>
-          <Text style={styles.text}>Total Workouts: {totalWorkouts}</Text>
-          <Text style={styles.text}>Total Time: {formatTime(totalTime)}</Text>
-          <Text style={styles.text}>Total Reps: {totalReps}</Text>
-          <Text style={styles.text}>
-            Best Lift:{" "}
-            {bestLift.name
-              ? `${bestLift.name} ${bestLift.weight}kg`
-              : "No lifts recorded"}
-          </Text>
-          <View style={styles.weekContainer}>
-            <Text style={styles.weekTitle}>This Week</Text>
-            <View style={styles.weekDays}>
-              {weekData.map((day, index) => (
-                <View
-                  key={index}
-                  style={[styles.dayBox, day.hasWorkout && styles.workoutDay]}
-                >
-                  <Text
-                    style={[
-                      styles.dayText,
-                      day.hasWorkout && styles.workoutDayText,
-                    ]}
-                  >
-                    {day.dayName}
-                  </Text>
-                </View>
-              ))}
-            </View>
-            <Text style={styles.weekSummary}>
-              Workouts this week:{" "}
-              {weekData.filter((day) => day.hasWorkout).length}
+    return (
+      <View style={styles.sectionContainer}>
+        {/* Refresh Icon */}
+        <TouchableOpacity style={styles.refreshIcon} onPress={loadData}>
+          <Ionicons name="refresh" size={24} color={theme.colors.accent} />
+        </TouchableOpacity>
+
+        {selectedSection === "Stats" && (
+          <>
+            <Text style={styles.sectionTitle}>Stats Summary</Text>
+            <Text style={styles.text}>Total Workouts: {totalWorkouts}</Text>
+            <Text style={styles.text}>Total Time: {formatTime(totalTime)}</Text>
+            <Text style={styles.text}>Total Reps: {totalReps}</Text>
+            <Text style={styles.text}>
+              Best Lift:{" "}
+              {bestLift.name
+                ? `${bestLift.name} ${bestLift.weight}kg`
+                : "No lifts recorded"}
             </Text>
-          </View>
-        </View>
-      );
-    }
-    if (selectedSection === "History") {
-      return (
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Recent History</Text>
-          {recentWorkouts.length === 0 ? (
-            <Text style={styles.text}>No workouts logged yet.</Text>
-          ) : (
-            <ScrollView>
-              {recentWorkouts.map((workout, index) => (
-                <View key={index} style={styles.historyItem}>
-                  <Text style={styles.text}>
-                    {workout.date}{" "}
-                    {workout.duration
-                      ? `(${formatTime(workout.duration)})`
-                      : ""}
-                  </Text>
-                  {workout.exercises.map((exercise, idx) => (
-                    <Text key={idx} style={styles.text}>
-                      - {exercise.name}: {exercise.reps} reps @{" "}
-                      {exercise.weight}kg
+            <View style={styles.weekContainer}>
+              <Text style={styles.weekTitle}>This Week</Text>
+              <View style={styles.weekDays}>
+                {weekData.map((day, index) => (
+                  <View
+                    key={index}
+                    style={[styles.dayBox, day.hasWorkout && styles.workoutDay]}
+                  >
+                    <Text
+                      style={[
+                        styles.dayText,
+                        day.hasWorkout && styles.workoutDayText,
+                      ]}
+                    >
+                      {day.dayName}
                     </Text>
-                  ))}
-                </View>
-              ))}
-            </ScrollView>
-          )}
-        </View>
-      );
-    }
+                  </View>
+                ))}
+              </View>
+              <Text style={styles.weekSummary}>
+                Workouts this week:{" "}
+                {weekData.filter((day) => day.hasWorkout).length}
+              </Text>
+            </View>
+          </>
+        )}
+
+        {selectedSection === "History" && (
+          <>
+            <Text style={styles.sectionTitle}>Recent History</Text>
+            {recentWorkouts.length === 0 ? (
+              <Text style={styles.text}>No workouts logged yet.</Text>
+            ) : (
+              <ScrollView>
+                {recentWorkouts.map((workout, index) => (
+                  <View key={index} style={styles.historyItem}>
+                    <Text style={styles.text}>
+                      {workout.date}{" "}
+                      {workout.duration
+                        ? `(${formatTime(workout.duration)})`
+                        : ""}
+                    </Text>
+                    {workout.exercises.map((exercise, idx) => (
+                      <Text key={idx} style={styles.text}>
+                        - {exercise.name}: {exercise.reps} reps @{" "}
+                        {exercise.weight}kg
+                      </Text>
+                    ))}
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+          </>
+        )}
+      </View>
+    );
   };
 
   return (
@@ -253,6 +274,13 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.secondary,
     padding: theme.spacing.medium,
     borderRadius: theme.borderRadius.large,
+    position: "relative", // Added for absolute positioning
+  },
+  refreshIcon: {
+    position: "absolute",
+    top: theme.spacing.small,
+    right: theme.spacing.small,
+    zIndex: 1,
   },
   sectionTitle: {
     ...theme.typography.sectionTitle,

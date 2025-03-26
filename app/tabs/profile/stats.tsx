@@ -1,59 +1,63 @@
 import { View, Text, StyleSheet } from "react-native";
-import { useEffect, useState } from "react";
+import { useState, useCallback } from "react";
 import * as SecureStore from "expo-secure-store";
 import { theme } from "../../../theme-config";
-import { formatDate } from "../../../utils/dateUtils"; // Replaced date-fns import
+import { formatDate } from "../../../utils/dateUtils";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function StatsPage() {
   const [totalWorkouts, setTotalWorkouts] = useState(0);
   const [totalTime, setTotalTime] = useState(0);
   const [weekData, setWeekData] = useState([]);
 
-  useEffect(() => {
-    const loadWorkoutData = async () => {
-      try {
-        const storedHistory = await SecureStore.getItemAsync("workoutHistory");
-        const history = storedHistory ? JSON.parse(storedHistory) : [];
-        console.log("Workout history:", history);
+  const loadWorkoutData = useCallback(async () => {
+    console.log("Loading data for StatsPage");
+    try {
+      const storedHistory = await SecureStore.getItemAsync("workoutHistory");
+      const history = storedHistory ? JSON.parse(storedHistory) : [];
+      console.log("StatsPage history length:", history.length);
 
-        const workoutCount = history.length;
-        const timeSum = history.reduce(
-          (sum, workout) => sum + (workout.duration || 0),
-          0
-        );
-        setTotalWorkouts(workoutCount);
-        setTotalTime(timeSum);
+      const workoutCount = history.length;
+      const timeSum = history.reduce(
+        (sum, workout) => sum + (workout.duration || 0),
+        0
+      );
+      setTotalWorkouts(workoutCount);
+      setTotalTime(timeSum);
 
-        const now = new Date();
-        const startOfWeek = new Date(now);
-        startOfWeek.setDate(
-          now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)
-        );
-        startOfWeek.setHours(0, 0, 0, 0);
+      const now = new Date();
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(
+        now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)
+      );
+      startOfWeek.setHours(0, 0, 0, 0);
 
-        const weekDays = Array.from({ length: 7 }, (_, i) => {
-          const day = new Date(startOfWeek);
-          day.setDate(startOfWeek.getDate() + i);
-          const dateStr = formatDate(day); // Replaced format from date-fns
-          const hasWorkout = history.some(
-            (workout) => workout.date === dateStr
-          );
-          return {
-            date: dateStr,
-            dayName: day.toLocaleDateString("en-US", { weekday: "short" }),
-            hasWorkout,
-          };
-        });
-        setWeekData(weekDays);
-      } catch (error) {
-        console.error("Error loading workout data:", error);
-        setTotalWorkouts(0);
-        setTotalTime(0);
-        setWeekData([]);
-      }
-    };
-    loadWorkoutData();
+      const weekDays = Array.from({ length: 7 }, (_, i) => {
+        const day = new Date(startOfWeek);
+        day.setDate(startOfWeek.getDate() + i);
+        const dateStr = formatDate(day);
+        const hasWorkout = history.some((workout) => workout.date === dateStr);
+        return {
+          date: dateStr,
+          dayName: day.toLocaleDateString("en-US", { weekday: "short" }),
+          hasWorkout,
+        };
+      });
+      setWeekData(weekDays);
+    } catch (error) {
+      console.error("Error loading workout data:", error);
+      setTotalWorkouts(0);
+      setTotalTime(0);
+      setWeekData([]);
+    }
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      console.log("StatsPage focused");
+      loadWorkoutData();
+    }, [loadWorkoutData])
+  );
 
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);

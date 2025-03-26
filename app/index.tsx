@@ -1,14 +1,24 @@
-import { useAuth } from '../context/AuthContext'; // Adjust the path to your AuthContext file
-import { Redirect } from 'expo-router';
-import { Text } from 'react-native';
+import { useAuth } from "../context/AuthContext"; // Adjust the path to your AuthContext file
+import { Redirect } from "expo-router";
+import { Text, StatusBar } from "react-native"; // Updated import to include StatusBar
 
 export default function AppIndex() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <Text>Loading...</Text>;
+    return (
+      <>
+        <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+        <Text>Loading...</Text>
+      </>
+    );
   }
 
   // Redirect to home if user is logged in, otherwise to login
-  return user ? <Redirect href="/tabs/home" /> : <Redirect href="/login" />;
+  return (
+    <>
+      <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+      {user ? <Redirect href="/tabs/home" /> : <Redirect href="/login" />}
+    </>
+  );
 }

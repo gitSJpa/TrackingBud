@@ -13,6 +13,7 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { theme } from "../../theme-config";
+import { formatDate } from "../../utils/dateUtils"; // Import the utility function
 
 export default function RoutineStart() {
   const router = useRouter();
@@ -107,7 +108,7 @@ export default function RoutineStart() {
     const endTime = Date.now();
     const duration = startTime ? Math.floor((endTime - startTime) / 1000) : 0;
     const completedWorkout = {
-      date: new Date().toLocaleDateString(),
+      date: formatDate(new Date()), // Use formatDate instead of toLocaleDateString
       exercises: exercises.map((ex) => ({
         name: ex.name,
         reps: ex.sets

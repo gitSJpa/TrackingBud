@@ -7,13 +7,13 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
-import { app as firebaseApp } from "../config/firebase-config";
+import { app as firebaseApp } from "../config/firebase-config"; // Adjust path
 import { theme } from "../theme-config";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState(""); // Added name state
+  const [name, setName] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const router = useRouter();
   const auth = getAuth(firebaseApp);
@@ -26,13 +26,13 @@ export default function LoginScreen() {
           email,
           password
         );
-        await updateProfile(userCredential.user, { displayName: name }); // Store name
+        await updateProfile(userCredential.user, { displayName: name });
         Alert.alert("Success", "Account created! Logging you in...");
       } else {
         await signInWithEmailAndPassword(auth, email, password);
         Alert.alert("Success", "Logged in successfully!");
       }
-      router.replace("/tabs/index");
+      router.replace("/"); // Navigate to root to trigger redirect
     } catch (error) {
       Alert.alert("Error", error.message);
     }
@@ -45,7 +45,6 @@ export default function LoginScreen() {
         <TextInput
           style={styles.input}
           placeholder="Name"
-          placeholderTextColor={theme.colors.placeholder}
           value={name}
           onChangeText={setName}
           autoCapitalize="words"
@@ -54,7 +53,6 @@ export default function LoginScreen() {
       <TextInput
         style={styles.input}
         placeholder="Email"
-        placeholderTextColor={theme.colors.placeholder}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -63,21 +61,15 @@ export default function LoginScreen() {
       <TextInput
         style={styles.input}
         placeholder="Password"
-        placeholderTextColor={theme.colors.placeholder}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
         autoCapitalize="none"
       />
-      <Button
-        title={isSignUp ? "Sign Up" : "Login"}
-        onPress={handleAuth}
-        color={theme.colors.accent}
-      />
+      <Button title={isSignUp ? "Sign Up" : "Login"} onPress={handleAuth} />
       <Button
         title={`Switch to ${isSignUp ? "Login" : "Sign Up"}`}
         onPress={() => setIsSignUp(!isSignUp)}
-        color={theme.colors.textSecondary}
       />
     </View>
   );

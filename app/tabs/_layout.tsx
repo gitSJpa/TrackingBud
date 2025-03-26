@@ -18,7 +18,7 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-          if (route.name === "index")
+          if (route.name === "home")
             iconName = focused ? "home" : "home-outline";
           else if (route.name === "workout")
             iconName = focused ? "barbell" : "barbell-outline";

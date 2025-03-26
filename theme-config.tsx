@@ -1,3 +1,4 @@
+console.log("theme-config loaded");
 export const theme = {
   colors: {
     primary: "#121212",

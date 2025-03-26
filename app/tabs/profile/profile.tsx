@@ -10,6 +10,7 @@ import * as SecureStore from "expo-secure-store";
 import { theme } from "../../../theme-config";
 import { getAuth } from "firebase/auth";
 import { app as firebaseApp } from "../../../config/firebase-config";
+import { formatDate } from "../../../utils/dateUtils"; // Added import
 
 export default function ProfilePage() {
   const [selectedSection, setSelectedSection] = useState("Stats");
@@ -19,7 +20,7 @@ export default function ProfilePage() {
   const [bestLift, setBestLift] = useState({ name: "", weight: 0 });
   const [recentWorkouts, setRecentWorkouts] = useState([]);
   const [weekData, setWeekData] = useState([]);
-  const [userName, setUserName] = useState(""); // Added userName state
+  const [userName, setUserName] = useState("");
   const auth = getAuth(firebaseApp);
 
   useEffect(() => {
@@ -54,6 +55,7 @@ export default function ProfilePage() {
         setBestLift({ name: maxExercise, weight: maxWeight });
         setRecentWorkouts(history.slice(-3).reverse());
 
+        // Calculate weekly workout data
         const now = new Date();
         const startOfWeek = new Date(now);
         startOfWeek.setDate(
@@ -64,7 +66,7 @@ export default function ProfilePage() {
         const weekDays = Array.from({ length: 7 }, (_, i) => {
           const day = new Date(startOfWeek);
           day.setDate(startOfWeek.getDate() + i);
-          const dateStr = day.toLocaleDateString();
+          const dateStr = formatDate(day); // Changed to formatDate
           const hasWorkout = history.some(
             (workout) => workout.date === dateStr
           );
@@ -76,7 +78,6 @@ export default function ProfilePage() {
         });
         setWeekData(weekDays);
 
-        // Set user name from Firebase
         if (auth.currentUser) {
           setUserName(auth.currentUser.displayName || "User");
         }

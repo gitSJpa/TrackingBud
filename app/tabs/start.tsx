@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { theme } from "../../theme-config";
+import { formatDate } from "../../utils/dateUtils"; // Import the utility function
 
 export default function WorkoutPage() {
   const [exerciseName, setExerciseName] = useState("");
@@ -49,7 +50,7 @@ export default function WorkoutPage() {
     const endTime = Date.now();
     const duration = startTime ? Math.floor((endTime - startTime) / 1000) : 0;
     const newWorkout = {
-      date: new Date().toLocaleDateString(),
+      date: formatDate(new Date()), // Use formatDate instead of toLocaleDateString
       exercises: sets,
       duration,
     };

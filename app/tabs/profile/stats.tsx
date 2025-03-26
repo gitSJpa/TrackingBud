@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import { theme } from "../../../theme-config";
+import { formatDate } from "../../../utils/dateUtils"; // Replaced date-fns import
 
 export default function StatsPage() {
   const [totalWorkouts, setTotalWorkouts] = useState(0);
@@ -13,24 +14,15 @@ export default function StatsPage() {
       try {
         const storedHistory = await SecureStore.getItemAsync("workoutHistory");
         const history = storedHistory ? JSON.parse(storedHistory) : [];
+        console.log("Workout history:", history);
+
         const workoutCount = history.length;
         const timeSum = history.reduce(
           (sum, workout) => sum + (workout.duration || 0),
           0
         );
-        const storedTotalWorkouts = await SecureStore.getItemAsync(
-          "totalWorkouts"
-        );
-        const storedTotalTime = await SecureStore.getItemAsync("totalTime");
-        setTotalWorkouts(
-          Math.max(
-            workoutCount,
-            storedTotalWorkouts ? parseInt(storedTotalWorkouts) : 0
-          )
-        );
-        setTotalTime(
-          Math.max(timeSum, storedTotalTime ? parseInt(storedTotalTime) : 0)
-        );
+        setTotalWorkouts(workoutCount);
+        setTotalTime(timeSum);
 
         const now = new Date();
         const startOfWeek = new Date(now);
@@ -42,7 +34,7 @@ export default function StatsPage() {
         const weekDays = Array.from({ length: 7 }, (_, i) => {
           const day = new Date(startOfWeek);
           day.setDate(startOfWeek.getDate() + i);
-          const dateStr = day.toLocaleDateString();
+          const dateStr = formatDate(day); // Replaced format from date-fns
           const hasWorkout = history.some(
             (workout) => workout.date === dateStr
           );

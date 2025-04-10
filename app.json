@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Tracking_Bud",
-    "slug": "Tracking_Bud",
+    "slug": "trackingbud",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -37,6 +37,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "9298d4bd-067f-4b12-9336-89af4ff511aa"
+      }
+    },
+    "owner": "sjpa"
   }
 }

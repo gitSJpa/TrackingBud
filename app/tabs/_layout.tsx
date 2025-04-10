@@ -29,7 +29,7 @@ export default function TabsLayout() {
         tabBarLabelStyle: { fontSize: 12, marginBottom: 5 },
       })}
     >
-      <Tabs.Screen name="index" options={{ tabBarLabel: "Home" }} />
+      <Tabs.Screen name="home" options={{ tabBarLabel: "Home" }} />
       <Tabs.Screen name="workout" options={{ tabBarLabel: "Workout" }} />
       <Tabs.Screen
         name="profile/profile"

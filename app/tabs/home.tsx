@@ -1,54 +1,55 @@
-import { View, Text, Button, StyleSheet, Platform } from "react-native";
+import { View, Text, Button, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
-import * as SecureStore from "expo-secure-store";
-import { theme } from "../../theme-config";
 import { getAuth, signOut } from "firebase/auth";
-import { app as firebaseApp } from "../../config/firebase-config";
+import { collection, query, onSnapshot } from "firebase/firestore";
+import { app as firebaseApp, db } from "../../config/firebase-config"; // Adjust path to your Firebase config
+import { theme } from "../../theme-config"; // Adjust path to your theme config
 
 export default function HomePage() {
   const [workoutCount, setWorkoutCount] = useState(0);
   const [user, setUser] = useState(null);
-  const [userName, setUserName] = useState(""); // Added userName state
+  const [userName, setUserName] = useState("");
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const auth = getAuth(firebaseApp);
 
+  // Handle authentication state changes
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+    const unsubscribeAuth = auth.onAuthStateChanged((currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        setUserName(currentUser.displayName || "User"); // Use displayName or fallback
+        setUserName(currentUser.displayName || "User");
       } else {
         router.replace("/login");
       }
       setLoading(false);
     });
 
-    const fetchWorkoutCount = async () => {
-      try {
-        let count;
-        if (Platform.OS === "web") {
-          count = localStorage.getItem("totalWorkouts");
-        } else {
-          count = await SecureStore.getItemAsync("totalWorkouts");
-        }
-        setWorkoutCount(count ? parseInt(count) : 0);
-      } catch (error) {
-        console.error("Error fetching workout count:", error);
-        setWorkoutCount(0);
-      }
-    };
-    fetchWorkoutCount();
-
-    return () => unsubscribe();
+    return () => unsubscribeAuth();
   }, []);
+
+  // Set up real-time listener for workout count
+  useEffect(() => {
+    if (!user) return;
+
+    const workoutsRef = collection(db, "users", user.uid, "workouts");
+    const q = query(workoutsRef);
+
+    const unsubscribeSnapshot = onSnapshot(q, (querySnapshot) => {
+      setWorkoutCount(querySnapshot.size); // Update count with the number of workouts
+    });
+
+    // Cleanup listener when component unmounts or user changes
+    return () => unsubscribeSnapshot();
+  }, [user]);
 
   const startWorkout = () => router.push("/tabs/workout");
   const viewHistory = () => router.push("/tabs/profile/history");
   const handleSignOut = async () => {
     try {
       await signOut(auth);
+      setWorkoutCount(0); // Reset count on sign out
       router.replace("/login");
     } catch (error) {
       Alert.alert("Error", error.message);

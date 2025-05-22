@@ -6,14 +6,16 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import * as SecureStore from "expo-secure-store";
 import { getAuth } from "firebase/auth";
-import { app as firebaseApp } from "../../../config/firebase-config";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { app as firebaseApp } from "../../../config/firebase-config"; // Adjust path
 import { useFocusEffect } from "@react-navigation/native";
-import { theme } from "../../../theme-config";
-import { Ionicons } from "@expo/vector-icons"; // Added import
+import { theme } from "../../../theme-config"; // Adjust path
+import { Ionicons } from "@expo/vector-icons";
+import { formatDate } from "@/utils/dateUtils";
 
-const formatDate = (date) => date.toISOString().split("T")[0];
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
 
 export default function ProfilePage() {
   const [selectedSection, setSelectedSection] = useState("Stats");
@@ -24,15 +26,22 @@ export default function ProfilePage() {
   const [recentWorkouts, setRecentWorkouts] = useState([]);
   const [weekData, setWeekData] = useState([]);
   const [userName, setUserName] = useState("");
-  const auth = getAuth(firebaseApp);
 
   const loadData = useCallback(async () => {
     console.log("Loading data for ProfilePage");
     try {
-      const storedHistory = await SecureStore.getItemAsync("workoutHistory");
-      console.log("Stored history:", storedHistory);
-      const history = storedHistory ? JSON.parse(storedHistory) : [];
-      console.log("Parsed history length:", history.length);
+      if (!auth.currentUser) {
+        throw new Error("No authenticated user found.");
+      }
+
+      const userWorkoutsRef = collection(
+        db,
+        "users",
+        auth.currentUser.uid,
+        "workouts"
+      );
+      const querySnapshot = await getDocs(userWorkoutsRef);
+      const history = querySnapshot.docs.map((doc) => doc.data());
 
       setTotalWorkouts(history.length);
       const timeSum = history.reduce(
@@ -63,10 +72,10 @@ export default function ProfilePage() {
       setRecentWorkouts(history.slice(-3).reverse());
 
       const now = new Date();
+      const dayOfWeek = now.getDay();
       const startOfWeek = new Date(now);
-      startOfWeek.setDate(
-        now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)
-      );
+      const daysToMonday = (dayOfWeek + 6) % 7;
+      startOfWeek.setDate(now.getDate() - daysToMonday);
       startOfWeek.setHours(0, 0, 0, 0);
 
       const weekDays = Array.from({ length: 7 }, (_, i) => {
@@ -82,9 +91,7 @@ export default function ProfilePage() {
       });
       setWeekData(weekDays);
 
-      if (auth.currentUser) {
-        setUserName(auth.currentUser.displayName || "User");
-      }
+      setUserName(auth.currentUser.displayName || "User");
     } catch (error) {
       console.error("Error loading profile data:", error);
       setTotalWorkouts(0);
@@ -94,7 +101,7 @@ export default function ProfilePage() {
       setRecentWorkouts([]);
       setWeekData([]);
     }
-  }, [auth.currentUser]);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -113,7 +120,6 @@ export default function ProfilePage() {
   const renderContent = () => {
     return (
       <View style={styles.sectionContainer}>
-        {/* Refresh Icon */}
         <TouchableOpacity style={styles.refreshIcon} onPress={loadData}>
           <Ionicons name="refresh" size={24} color={theme.colors.accent} />
         </TouchableOpacity>
@@ -150,7 +156,7 @@ export default function ProfilePage() {
                 ))}
               </View>
               <Text style={styles.weekSummary}>
-                Workouts this week:{" "}
+                Workout days this week:{" "}
                 {weekData.filter((day) => day.hasWorkout).length}
               </Text>
             </View>
@@ -174,7 +180,7 @@ export default function ProfilePage() {
                     </Text>
                     {workout.exercises.map((exercise, idx) => (
                       <Text key={idx} style={styles.text}>
-                        - {exercise.name}: {exercise.reps} reps @{" "}
+                        - {exercise.name}: {exercise.reps} reps of{" "}
                         {exercise.weight}kg
                       </Text>
                     ))}
@@ -274,7 +280,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.secondary,
     padding: theme.spacing.medium,
     borderRadius: theme.borderRadius.large,
-    position: "relative", // Added for absolute positioning
+    position: "relative",
   },
   refreshIcon: {
     position: "absolute",

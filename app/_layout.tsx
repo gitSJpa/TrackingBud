@@ -5,7 +5,7 @@ import { StatusBar } from "react-native";
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+      <StatusBar barStyle="light-content" backgroundColor="#121212" />
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />

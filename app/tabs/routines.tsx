@@ -35,7 +35,7 @@ export default function Routines() {
 
   const startWorkout = (routine) => {
     router.push({
-      pathname: "/routinestart",
+      pathname: "/tabs/routinestart",
       params: { routine: JSON.stringify(routine) },
     });
   };

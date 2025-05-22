@@ -8,9 +8,10 @@ import {
   FlatList,
   Alert,
 } from "react-native";
-import * as SecureStore from "expo-secure-store";
 import { theme } from "../../theme-config";
-import { formatDate } from "../../utils/dateUtils"; // Import the utility function
+import { formatDate } from "../../utils/dateUtils";
+import { collection, addDoc } from "firebase/firestore";
+import { auth, db } from "../../config/firebase-config"; // Adjust the path to your config file
 
 export default function WorkoutPage() {
   const [exerciseName, setExerciseName] = useState("");
@@ -50,31 +51,20 @@ export default function WorkoutPage() {
     const endTime = Date.now();
     const duration = startTime ? Math.floor((endTime - startTime) / 1000) : 0;
     const newWorkout = {
-      date: formatDate(new Date()), // Use formatDate instead of toLocaleDateString
+      date: formatDate(new Date()),
       exercises: sets,
       duration,
+      userId: auth.currentUser.uid, // Tie the workout to the current user
     };
 
     try {
-      const storedHistory = await SecureStore.getItemAsync("workoutHistory");
-      const updatedHistory = storedHistory
-        ? [...JSON.parse(storedHistory), newWorkout]
-        : [newWorkout];
-      await SecureStore.setItemAsync(
-        "workoutHistory",
-        JSON.stringify(updatedHistory)
+      const userWorkoutsRef = collection(
+        db,
+        "users",
+        auth.currentUser.uid,
+        "workouts"
       );
-      const totalWorkouts = await SecureStore.getItemAsync("totalWorkouts");
-      const newTotalWorkouts = totalWorkouts ? parseInt(totalWorkouts) + 1 : 1;
-      const totalTime = await SecureStore.getItemAsync("totalTime");
-      const newTotalTime = totalTime
-        ? parseInt(totalTime) + duration
-        : duration;
-      await SecureStore.setItemAsync(
-        "totalWorkouts",
-        newTotalWorkouts.toString()
-      );
-      await SecureStore.setItemAsync("totalTime", newTotalTime.toString());
+      await addDoc(userWorkoutsRef, newWorkout);
       setSets([]);
       setExerciseName("");
       setStartTime(null);

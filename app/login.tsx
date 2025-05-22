@@ -66,11 +66,20 @@ export default function LoginScreen() {
         secureTextEntry
         autoCapitalize="none"
       />
-      <Button title={isSignUp ? "Sign Up" : "Login"} onPress={handleAuth} />
-      <Button
-        title={`Switch to ${isSignUp ? "Login" : "Sign Up"}`}
-        onPress={() => setIsSignUp(!isSignUp)}
-      />
+      <View style={styles.buttonSpacer}>
+        <Button
+          title={isSignUp ? "Sign Up" : "Login"}
+          onPress={handleAuth}
+          color={theme.colors.accent}
+        />
+      </View>
+      <View style={styles.buttonSpacer}>
+        <Button
+          title={`Switch to ${isSignUp ? "Login" : "Sign Up"}`}
+          onPress={() => setIsSignUp(!isSignUp)}
+          color={theme.colors.accent}
+        />
+      </View>
     </View>
   );
 }
@@ -94,5 +103,8 @@ const styles = StyleSheet.create({
     padding: theme.spacing.medium,
     marginBottom: theme.spacing.medium,
     width: "80%",
+  },
+  buttonSpacer: {
+    marginTop: theme.spacing.medium,
   },
 });

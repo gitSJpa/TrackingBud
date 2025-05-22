@@ -103,15 +103,16 @@ export default function CreateRoutine() {
             </Text>
             <View style={styles.exerciseControls}>
               <Button
-                title="+"
-                onPress={() => updateSets(item.id, 1)}
-                color={theme.colors.accent}
-              />
-              <Button
                 title="-"
                 onPress={() => updateSets(item.id, -1)}
                 color={theme.colors.accent}
               />
+              <Button
+                title="+"
+                onPress={() => updateSets(item.id, 1)}
+                color={theme.colors.accent}
+              />
+
               <Button
                 title="Remove"
                 color={theme.colors.accent}

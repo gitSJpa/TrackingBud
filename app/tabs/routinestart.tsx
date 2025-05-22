@@ -11,9 +11,15 @@ import {
   Platform,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import * as SecureStore from "expo-secure-store";
 import { theme } from "../../theme-config";
-import { formatDate } from "../../utils/dateUtils"; // Import the utility function
+import { formatDate } from "../../utils/dateUtils";
+import { getAuth } from "firebase/auth";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { app as firebaseApp } from "../../config/firebase-config";
+
+// Initialize Firebase Auth and Firestore
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
 
 export default function RoutineStart() {
   const router = useRouter();
@@ -41,6 +47,7 @@ export default function RoutineStart() {
   const startRoutine = () => setStartTime(Date.now());
 
   const updateSet = (exerciseId, setIndex, field, value) => {
+    if (!startTime) startRoutine();
     setExercises((prevExercises) =>
       prevExercises.map((exercise) =>
         exercise.id === exerciseId
@@ -105,45 +112,52 @@ export default function RoutineStart() {
   };
 
   const finishRoutine = async () => {
+    if (exercises.some((ex) => ex.sets.length === 0)) {
+      Alert.alert(
+        "Error",
+        "Add at least one set to each exercise before finishing the routine."
+      );
+      return;
+    }
     const endTime = Date.now();
     const duration = startTime ? Math.floor((endTime - startTime) / 1000) : 0;
-    const completedWorkout = {
-      date: formatDate(new Date()), // Use formatDate instead of toLocaleDateString
-      exercises: exercises.map((ex) => ({
-        name: ex.name,
-        reps: ex.sets
-          .map((s) => parseInt(s.reps) || 0)
-          .reduce((a, b) => a + b, 0),
-        weight: ex.sets
-          .map((s) => parseFloat(s.weight) || 0)
-          .reduce((a, b) => Math.max(a, b), 0),
-      })),
+    const newWorkout = {
+      date: formatDate(new Date()),
+      exercises: exercises.flatMap((ex) =>
+        ex.sets.map((set) => ({
+          name: ex.name,
+          weight: parseFloat(set.weight) || 0,
+          reps: parseInt(set.reps) || 0,
+        }))
+      ),
       duration,
+      userId: auth.currentUser.uid, // Tie the workout to the authenticated user
     };
 
     try {
-      const storedHistory = await SecureStore.getItemAsync("workoutHistory");
-      const updatedHistory = storedHistory
-        ? [...JSON.parse(storedHistory), completedWorkout]
-        : [completedWorkout];
-      await SecureStore.setItemAsync(
-        "workoutHistory",
-        JSON.stringify(updatedHistory)
+      // Save to Firestore under the user's workouts collection
+      const userWorkoutsRef = collection(
+        db,
+        "users",
+        auth.currentUser.uid,
+        "workouts"
       );
-      const totalWorkouts = await SecureStore.getItemAsync("totalWorkouts");
-      const newTotalWorkouts = totalWorkouts ? parseInt(totalWorkouts) + 1 : 1;
-      const totalTime = await SecureStore.getItemAsync("totalTime");
-      const newTotalTime = totalTime
-        ? parseInt(totalTime) + duration
-        : duration;
-      await SecureStore.setItemAsync(
-        "totalWorkouts",
-        newTotalWorkouts.toString()
+      await addDoc(userWorkoutsRef, newWorkout);
+
+      // Reset state after successful save
+      setExercises(
+        parsedRoutine.exercises.map((exercise) => ({
+          ...exercise,
+          sets: Array.from({ length: exercise.sets }, (_, index) => ({
+            id: `${exercise.id}_set${index + 1}`,
+            reps: "",
+            weight: "",
+          })),
+        }))
       );
-      await SecureStore.setItemAsync("totalTime", newTotalTime.toString());
       setStartTime(null);
-      Alert.alert("Routine Complete", "Great job completing your routine!");
-      router.push("/routines");
+      setNewExerciseName("");
+      Alert.alert("Success", "Routine saved!");
     } catch (error) {
       console.error("Failed to save routine:", error);
       Alert.alert("Error", "Couldn’t save routine. Try again.");

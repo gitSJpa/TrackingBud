@@ -8,7 +8,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { app as firebaseApp } from "../config/firebase-config"; // Adjust path
-import { theme } from "../theme-config";
+import { theme } from "../config/theme-config";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");

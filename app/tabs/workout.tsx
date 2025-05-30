@@ -1,6 +1,6 @@
 import { View, Text, Button, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { theme } from "../../theme-config";
+import { theme } from "../../config/theme-config";
 
 export default function WorkoutPage() {
   const router = useRouter();

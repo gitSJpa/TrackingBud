@@ -8,7 +8,7 @@ import {
   FlatList,
   Alert,
 } from "react-native";
-import { theme } from "../../theme-config";
+import { theme } from "../../config/theme-config";
 import { formatDate } from "../../utils/dateUtils";
 import { collection, addDoc } from "firebase/firestore";
 import { auth, db } from "../../config/firebase-config"; // Adjust the path to your config file

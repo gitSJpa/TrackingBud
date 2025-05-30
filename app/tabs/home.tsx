@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { getAuth, signOut } from "firebase/auth";
 import { collection, query, onSnapshot } from "firebase/firestore";
 import { app as firebaseApp, db } from "../../config/firebase-config"; // Adjust path to your Firebase config
-import { theme } from "../../theme-config"; // Adjust path to your theme config
+import { theme } from "../../config/theme-config"; // Adjust path to your theme config
 
 export default function HomePage() {
   const [workoutCount, setWorkoutCount] = useState(0);

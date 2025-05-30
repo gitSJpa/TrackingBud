@@ -1,7 +1,7 @@
 import { View, Text, FlatList, StyleSheet, Button, Alert } from "react-native";
 import { useState, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
-import { theme } from "../../../theme-config";
+import { theme } from "../../../config/theme-config";
 
 export default function HistoryPage() {
   const [workoutHistory, setWorkoutHistory] = useState([]);

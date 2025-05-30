@@ -10,7 +10,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { app as firebaseApp } from "../../../config/firebase-config"; // Adjust path
 import { useFocusEffect } from "@react-navigation/native";
-import { theme } from "../../../theme-config"; // Adjust path
+import { theme } from "../../../config/theme-config"; // Adjust path
 import { Ionicons } from "@expo/vector-icons";
 import { formatDate } from "@/utils/dateUtils";
 

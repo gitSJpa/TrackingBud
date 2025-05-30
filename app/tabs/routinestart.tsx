@@ -11,7 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { theme } from "../../theme-config";
+import { theme } from "../../config/theme-config";
 import { formatDate } from "../../utils/dateUtils";
 import { getAuth } from "firebase/auth";
 import { getFirestore, collection, addDoc } from "firebase/firestore";

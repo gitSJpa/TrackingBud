@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useState, useCallback } from "react";
 import * as SecureStore from "expo-secure-store";
-import { theme } from "../../../theme-config";
+import { theme } from "../../../config/theme-config";
 import { formatDate } from "../../../utils/dateUtils";
 import { useFocusEffect } from "@react-navigation/native";
 

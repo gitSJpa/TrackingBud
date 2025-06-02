@@ -1,4 +1,9 @@
-TrackingBud - Fitness Tracking App
+# YOUR PROJECT TITLE: TrackingBud - Fitness Tracking App
+
+#### Video Demo: <URL HERE>
+
+#### Description:
+
 Hello! Welcome to TrackingBud, my fitness tracking app I built using React Native and Firebase. This app helps people like me to log their workouts, see their progress, and check statistics about their fitness. It uses Firebase to keep user data safe in the cloud and let you use it on different devices. I am proud of this project because it mixes modern tools to make something useful and nice to use.
 The idea of TrackingBud is simple but strong. You can save your workouts with details like exercise name, weight, and reps. You can also start routines, see your total workouts, time spent, and even your best lifts.
 

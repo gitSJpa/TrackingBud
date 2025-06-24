@@ -6,27 +6,17 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "android": {
-        "buildProperties": {
-          "expo.kotlin.version": "1.9.25"
-        }
-      }
+      "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal",
-      "android": {
-        "buildProperties": {
-          "expo.kotlin.version": "1.9.25"
-        }
-      }
+      "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true,
-      "android": {
-        "buildProperties": {
-          "expo.kotlin.version": "1.9.25"
-        }
+      "autoIncrement": true
+    },
+    "android": {
+      "buildProperties": {
+        "expo.kotlin.version": "1.9.25"
       }
     }
   },
@@ -34,3 +24,4 @@
     "production": {}
   }
 }
+

@@ -13,11 +13,6 @@
     },
     "production": {
       "autoIncrement": true
-    },
-    "android": {
-      "buildProperties": {
-        "expo.kotlin.version": "1.9.25"
-      }
     }
   },
   "submit": {

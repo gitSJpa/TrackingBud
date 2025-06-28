@@ -1,0 +1,69 @@
+{
+  "expo": {
+    "name": "Tracking_Bud",
+    "slug": "trackingbud",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.sjpa.trackingbud"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-secure-store",
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "1.9.25"
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "firebase": {
+        "apiKey": "AIzaSyDThq9q1IaOd8tqPenK419QcKcJpqA7orA",
+        "authDomain": "trackingbud-fcad4.firebaseapp.com",
+        "projectId": "trackingbud-fcad4",
+        "storageBucket": "trackingbud-fcad4.appspot.com",
+        "messagingSenderId": "225152083975",
+        "appId": "1:225152083975:web:3f6574572743176b3c22a2"
+      },
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "9298d4bd-067f-4b12-9336-89af4ff511aa"
+      }
+    },
+    "owner": "sjpa"
+  }
+}

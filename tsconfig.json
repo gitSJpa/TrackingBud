@@ -3,7 +3,9 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@/*": ["./*"],
+      "@/*": [
+        "./*"
+      ],
       "@react-native-async-storage/async-storage": [
         "node_modules/@react-native-async-storage/async-storage"
       ]
@@ -12,8 +14,8 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    "app/firebase.js",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts",
-    "app/firebase.js"
+    "expo-env.d.ts"
   ]
 }

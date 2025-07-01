@@ -5,9 +5,16 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Button,
 } from "react-native";
 import { getAuth } from "firebase/auth";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import { app as firebaseApp } from "../../../config/firebase-config"; // Adjust path
 import { useFocusEffect } from "@react-navigation/native";
 import { theme } from "../../../config/theme-config"; // Adjust path
@@ -41,7 +48,10 @@ export default function ProfilePage() {
         "workouts"
       );
       const querySnapshot = await getDocs(userWorkoutsRef);
-      const history = querySnapshot.docs.map((doc) => doc.data());
+      const history = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
       setTotalWorkouts(history.length);
       const timeSum = history.reduce(
@@ -109,6 +119,15 @@ export default function ProfilePage() {
       loadData();
     }, [loadData])
   );
+
+  const handleDeleteWorkout = async (id) => {
+    try {
+      await deleteDoc(doc(db, "users", auth.currentUser.uid, "workouts", id));
+      loadData();
+    } catch (err) {
+      console.error("Failed to delete workout:", err);
+    }
+  };
 
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);
@@ -184,6 +203,11 @@ export default function ProfilePage() {
                         {exercise.weight}kg
                       </Text>
                     ))}
+                    <Button
+                      title="Remove"
+                      onPress={() => handleDeleteWorkout(workout.id)}
+                      color={theme.colors.accent}
+                    />
                   </View>
                 ))}
               </ScrollView>

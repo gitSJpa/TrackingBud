@@ -45,7 +45,6 @@ export default function HomePage() {
   }, [user]);
 
   const startWorkout = () => router.push("/tabs/workout");
-  const viewHistory = () => router.push("/tabs/profile/history");
   const handleSignOut = async () => {
     try {
       await signOut(auth);
@@ -75,13 +74,6 @@ export default function HomePage() {
         onPress={startWorkout}
         color={theme.colors.accent}
       />
-      <View style={styles.buttonSpacer}>
-        <Button
-          title="View History"
-          onPress={viewHistory}
-          color={theme.colors.accent}
-        />
-      </View>
       <View style={styles.buttonSpacer}>
         <Button
           title="Sign Out"

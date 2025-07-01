@@ -35,8 +35,6 @@ export default function TabsLayout() {
         name="profile/profile"
         options={{ tabBarLabel: "Profile" }}
       />
-      <Tabs.Screen name="profile/history" options={{ href: null }} />
-      <Tabs.Screen name="profile/stats" options={{ href: null }} />
       <Tabs.Screen name="createroutine" options={{ href: null }} />
       <Tabs.Screen name="routinestart" options={{ href: null }} />
       <Tabs.Screen name="routines" options={{ href: null }} />

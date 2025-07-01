@@ -1,6 +1,5 @@
-// app/_layout.tsx
 import { Stack } from "expo-router";
-import { AuthProvider } from "../context/AuthContext"; // Adjust the path to your AuthContext file
+import { AuthProvider } from "../context/AuthContext"; // Adjust the path to your AuthContext file, bug fixes by gpt
 import { StatusBar } from "react-native";
 export default function RootLayout() {
   return (

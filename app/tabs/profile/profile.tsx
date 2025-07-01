@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+//Used grop to help me on sintaxe and logic overall.
+import { useState, useCallback } from "react"; //Used Grok for all the right imports
 import {
   View,
   Text,
@@ -25,6 +26,7 @@ const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 
 export default function ProfilePage() {
+  // Used Grok to make sure I have all the consts I need and correct my faulty logic many times :)
   const [selectedSection, setSelectedSection] = useState("Stats");
   const [totalWorkouts, setTotalWorkouts] = useState(0);
   const [totalTime, setTotalTime] = useState(0);
@@ -81,7 +83,7 @@ export default function ProfilePage() {
 
       setRecentWorkouts(history.slice(-3).reverse());
 
-      const now = new Date();
+      const now = new Date(); // Faulty logic corrected by Grok (my main headache on this page)
       const dayOfWeek = now.getDay();
       const startOfWeek = new Date(now);
       const daysToMonday = (dayOfWeek + 6) % 7;
@@ -153,7 +155,7 @@ export default function ProfilePage() {
               Best Lift:{" "}
               {bestLift.name
                 ? `${bestLift.name} ${bestLift.weight}kg`
-                : "No lifts recorded"}
+                : "No lifts recorded!"}
             </Text>
             <View style={styles.weekContainer}>
               <Text style={styles.weekTitle}>This Week</Text>

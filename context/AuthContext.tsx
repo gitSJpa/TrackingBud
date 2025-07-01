@@ -1,4 +1,4 @@
-// context/AuthContext.tsx
+// Imense help from both grok and gpt, authcontext gave me some major dificulties
 import { createContext, useContext, useEffect, useState } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { app as firebaseApp } from "../config/firebase-config"; // Adjust the path to your Firebase config

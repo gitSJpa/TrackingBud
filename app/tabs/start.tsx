@@ -1,3 +1,4 @@
+//Used Grok overall to help with logic and sintaxe and variable management. Used some of the stuff here on other pages aswell
 import { useState } from "react";
 import {
   View,
@@ -11,7 +12,7 @@ import {
 import { theme } from "../../config/theme-config";
 import { formatDate } from "../../utils/dateUtils";
 import { collection, addDoc } from "firebase/firestore";
-import { auth, db } from "../../config/firebase-config"; // Adjust the path to your config file
+import { auth, db } from "../../config/firebase-config";
 
 export default function WorkoutPage() {
   const [exerciseName, setExerciseName] = useState("");
@@ -54,7 +55,7 @@ export default function WorkoutPage() {
       date: formatDate(new Date()),
       exercises: sets,
       duration,
-      userId: auth.currentUser.uid, // Tie the workout to the current user
+      userId: auth.currentUser.uid, // Tie the workout to the current user, bug fixed with the help of GPT
     };
 
     try {

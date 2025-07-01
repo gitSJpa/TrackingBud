@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons"; // thankyou Grok
 import { theme } from "../../config/theme-config";
 
 export default function TabsLayout() {
@@ -35,10 +35,10 @@ export default function TabsLayout() {
         name="profile/profile"
         options={{ tabBarLabel: "Profile" }}
       />
-      <Tabs.Screen name="createroutine" options={{ href: null }} />
+      <Tabs.Screen name="createroutine" options={{ href: null }} /> //
       <Tabs.Screen name="routinestart" options={{ href: null }} />
       <Tabs.Screen name="routines" options={{ href: null }} />
       <Tabs.Screen name="start" options={{ href: null }} />
     </Tabs>
-  );
+  ); // Used Grok to help me get rid of the unwanted pages on the navigation bar
 }

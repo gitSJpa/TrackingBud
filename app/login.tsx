@@ -1,3 +1,4 @@
+//Used Grok overall to help with logic and sintaxe and variable management.
 import { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
@@ -7,7 +8,7 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
-import { app as firebaseApp } from "../config/firebase-config"; // Adjust path
+import { app as firebaseApp } from "../config/firebase-config";
 import { theme } from "../config/theme-config";
 
 export default function LoginScreen() {
@@ -19,6 +20,7 @@ export default function LoginScreen() {
   const auth = getAuth(firebaseApp);
 
   const handleAuth = async () => {
+    //used GPT to help me make this handle
     try {
       if (isSignUp) {
         const userCredential = await createUserWithEmailAndPassword(

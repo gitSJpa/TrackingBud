@@ -5,3 +5,4 @@ export const formatDate = (date) => {
   const day = String(d.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
+// This whole thing was grok's idea to fix a bug i had. Im not sure i fully understood where the problem was, but making all the dates on the same format fixed it.

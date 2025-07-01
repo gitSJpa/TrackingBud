@@ -1,6 +1,6 @@
-import { useAuth } from "../context/AuthContext"; // Adjust the path to your AuthContext file
+import { useAuth } from "../context/AuthContext"; // Adjust the path to your AuthContext file, bug fixed by gpt
 import { Redirect } from "expo-router";
-import { Text, StatusBar } from "react-native"; // Updated import to include StatusBar
+import { Text, StatusBar } from "react-native";
 
 export default function AppIndex() {
   const { user, loading } = useAuth();
